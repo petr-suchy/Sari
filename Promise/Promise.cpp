@@ -28,7 +28,11 @@ int main()
 
             return Utils::Promise::Resolve(service, sum)
                 .then([&service](int sum) {
+                    throw std::logic_error("ahoj");
                     return sum;
+                }).fail([](const std::exception& e) {
+                    std::cerr << "error2: " << e.what() << '\n';
+                    return 0;
                 });
 
         }).then([](int sum) {

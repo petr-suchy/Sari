@@ -47,23 +47,10 @@ namespace Sari { namespace Utils {
                     executor(resolve, reject);
                 }
                 catch (const std::exception& e) {
-
-                    impl->state_ = State::Rejected;
-
-                    if (impl->parent_) {
-                        impl->parent_->reject(std::vector<std::any>{e});
-                    }
-                    else {
-                        impl->result_ = std::vector<std::any>{e};
-                    }
+                    impl->reject(std::vector<std::any>{e});
                 }
                 catch (...) {
-
-                    impl->state_ = State::Rejected;
-
-                    if (impl->parent_) {
-                        impl->parent_->reject(std::vector<std::any>{});
-                    }
+                    impl->reject(std::vector<std::any>{});
                 }
             });
         }
