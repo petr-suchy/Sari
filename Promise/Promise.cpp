@@ -21,14 +21,24 @@ int main()
         );
 
         p.then([](int x, int y) {
-            std::cout << x << ' ' << y << '\n';
             return x + y;
         }).then([&service = p.service()](int sum) {
+
             std::cout << sum << '\n';
-            return Utils::Promise::Resolve(service, 123).then([&service](int x) {
-                std::cout << x << '\n';
-                return Utils::Promise::Resolve(service, 10, 20);
-            });
+
+            return Utils::Promise::Resolve(service, sum)
+                .then([&service](int sum) {
+                    return sum;
+                });
+
+        }).then([](int sum) {
+            std::cout << "test: " << sum << "\n";
+        }).fail([](int ec) {
+            std::cerr << "error: " << ec << '\n';
+        }).fail([]() {
+            std::cerr << "error!\n";
+        }).fail([](const std::exception& e) {
+            std::cerr << "error: " << e.what() << '\n';
         });
 
         service.run();
