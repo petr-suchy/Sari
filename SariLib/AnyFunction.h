@@ -90,7 +90,7 @@ namespace Sari { namespace Utils {
 		{}
 
 		template<typename... Args>
-		std::any operator() (Args... args)
+		std::any operator() (Args... args) const
 		{
 			std::vector<std::any> vargs = { args... };
 			return func_(vargs);

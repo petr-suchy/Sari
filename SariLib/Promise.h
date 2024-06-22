@@ -53,6 +53,9 @@ namespace Sari { namespace Utils {
                     if (impl->parent_) {
                         impl->parent_->reject(std::vector<std::any>{e});
                     }
+                    else {
+                        impl->result_ = std::vector<std::any>{e};
+                    }
                 }
                 catch (...) {
 
