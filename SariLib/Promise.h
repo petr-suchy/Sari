@@ -25,34 +25,15 @@ namespace Sari { namespace Utils {
         {}
 
         Promise(boost::asio::io_context& ioContext, const Executor& executor) :
-            impl_(std::make_shared<Impl>(ioContext))
+            impl_(std::make_shared<Impl>(ioContext.get_executor()))
         {
-            boost::asio::post(ioContext, [executor, impl = impl_]() {
-
-                Utils::VariadicFunction resolve{
-                    [impl](const std::vector<std::any>& vargs) {
-                        impl->resolve(vargs);
-                        return std::any{};
-                    }
-                };
-
-                Utils::VariadicFunction reject{
-                    [impl](const std::vector<std::any>& vargs) {
-                        impl->reject(vargs);
-                        return std::any{};
-                    }
-                };
-
-                try {
-                    executor(resolve, reject);
-                }
-                catch (const std::exception& e) {
-                    impl->reject(std::vector<std::any>{e});
-                }
-                catch (...) {
-                    impl->reject(std::vector<std::any>{});
-                }
-            });
+            impl_->postExecutor(executor);
+        }
+        
+        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor) :
+            impl_(std::make_shared<Impl>(ioExecutor))
+        {
+            impl_->postExecutor(executor);
         }
 
         bool isNull() const
@@ -60,9 +41,9 @@ namespace Sari { namespace Utils {
             return impl_ == nullptr;
         }
 
-        boost::asio::io_context& ioContext()
+        boost::asio::any_io_executor getExecutor()
         {
-            return impl_->ioContext_;
+            return impl_->ioExecutor_;
         }
 
         State state() const
@@ -96,12 +77,12 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        static Promise Resolve(boost::asio::io_context& ioContext, Args... args)
+        static Promise Resolve(boost::asio::any_io_executor ioExecutor, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
 
             return Promise(
-                ioContext,
+                ioExecutor,
                 [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
                 {
                     resolve(vargs);
@@ -110,12 +91,18 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        static Promise Reject(boost::asio::io_context& ioContext, Args... args)
+        static Promise Resolve(boost::asio::io_context& ioContext, Args&&... args)
+        {
+            return Resolve(ioContext.get_executor(), std::forward<Args>(args)...);
+        }
+
+        template<typename... Args>
+        static Promise Reject(boost::asio::any_io_executor ioExecutor, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
 
             return Promise(
-                ioContext,
+                ioExecutor,
                 [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
                 {
                     reject(vargs);
@@ -123,20 +110,56 @@ namespace Sari { namespace Utils {
             );
         }
 
+        template<typename... Args>
+        static Promise Reject(boost::asio::io_context& ioContext, Args&&... args)
+        {
+            Reject(ioContext.get_executor(), std::forward<Args>(args)...);
+        }
+
     private:
 
         struct Impl : public std::enable_shared_from_this<Impl> {
 
-            boost::asio::io_context& ioContext_;
+            boost::asio::any_io_executor ioExecutor_;
             std::shared_ptr<Impl> parent_;
             State state_ = State::Pending;
             std::vector<std::any> result_;
             std::list<Utils::AnyFunction> resolveHandlers_;
             std::unordered_map<std::type_index, Utils::AnyFunction> failHandlers_;
 
-            Impl(boost::asio::io_context& ioContext) :
-                ioContext_(ioContext)
+            Impl(boost::asio::any_io_executor ioExecutor) :
+                ioExecutor_(ioExecutor)
             {}
+
+            void postExecutor(const Executor& executor)
+            {
+                boost::asio::post(ioExecutor_, [executor, impl = shared_from_this()]() {
+
+                    Utils::VariadicFunction resolve{
+                        [impl](const std::vector<std::any>& vargs) {
+                            impl->resolve(vargs);
+                            return std::any{};
+                        }
+                    };
+
+                    Utils::VariadicFunction reject{
+                        [impl](const std::vector<std::any>& vargs) {
+                            impl->reject(vargs);
+                            return std::any{};
+                        }
+                    };
+
+                    try {
+                        executor(resolve, reject);
+                    }
+                    catch (const std::exception& e) {
+                        impl->reject(std::vector<std::any>{e});
+                    }
+                    catch (...) {
+                        impl->reject(std::vector<std::any>{});
+                    }
+                });
+            }
 
             void resolve(const std::vector<std::any>& vargs)
             {
@@ -170,7 +193,7 @@ namespace Sari { namespace Utils {
                             state_ = State::Fulfilled;
                         }
                         else {
-                            promise = Promise::Resolve(ioContext_, result);
+                            promise = Promise::Resolve(ioExecutor_, result);
                         }
                     }
                 }
@@ -179,7 +202,7 @@ namespace Sari { namespace Utils {
                         state_ = State::Fulfilled;
                     }
                     else {
-                        promise = Promise::Resolve(ioContext_);
+                        promise = Promise::Resolve(ioExecutor_);
                     }
                 }
 

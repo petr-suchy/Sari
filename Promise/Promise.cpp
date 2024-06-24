@@ -1,10 +1,14 @@
 #include <iostream>
 #include <boost/asio.hpp>
-#include "AnyFunction.h"
-#include "Promise.h"
+#include "Asio.h"
 
 namespace asio = boost::asio;
 namespace Utils = Sari::Utils;
+
+boost::asio::any_io_executor test(asio::io_context& ioContext)
+{
+    return ioContext.get_executor();
+}
 
 int main()
 {
@@ -22,12 +26,12 @@ int main()
 
         p.then([](int x, int y) {
             return x + y;
-        }).then([&ioCotext = p.ioContext()](int sum) {
+        }).then([&ioContext](int sum) {
 
             std::cout << sum << '\n';
 
-            return Utils::Promise::Resolve(ioCotext, sum)
-                .then([&ioCotext](int sum) {
+            return Utils::Promise::Resolve(ioContext, sum)
+                .then([](int sum) {
                     return sum;
                 }).fail([](const std::exception& e) {
                     std::cerr << "error2: " << e.what() << '\n';
