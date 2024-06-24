@@ -218,7 +218,19 @@ namespace Sari { namespace Utils {
                 Utils::AnyFunction resolveHandler = resolveHandlers_.front();
                 resolveHandlers_.pop_front();
 
-                std::any result = resolveHandler(vargs);
+                std::any result;
+
+                try {
+                    result = resolveHandler(vargs);
+                }
+                catch (const std::exception& e) {
+                    reject(std::vector<std::any>{e});
+                    return;
+                }
+                catch (...) {
+                    reject(std::vector<std::any>{});
+                    return;
+                }
 
                 Promise promise;
             
