@@ -69,6 +69,15 @@ namespace Sari { namespace Utils {
         template<typename Handler>
         Promise& then(Handler resolveHandler)
         {
+            switch (state()) {
+                case State::Fulfilled:
+                    throw std::logic_error("attempt to add a resolve handler for fulfilled promise");
+                break;
+                case State::Rejected:
+                    throw std::logic_error("attempt to add a resolve handler for rejected promise");
+                break;
+            }
+
             impl_->resolveHandlers_.push_back(
                 Utils::MakeAnyFunc(resolveHandler)
             );
@@ -80,6 +89,15 @@ namespace Sari { namespace Utils {
         Promise& fail(Handler failHandler)
         {
             using FuncSign = FunctionSignature<decltype(std::function{failHandler})> ;
+
+            switch (state()) {
+                case State::Fulfilled:
+                    throw std::logic_error("attempt to add a fail handler for fulfilled promise");
+                break;
+                case State::Rejected:
+                    throw std::logic_error("attempt to add a fail handler for rejected promise");
+                break;
+            }
 
             impl_->failHandlers_[std::type_index(typeid(FuncSign::Params::Type))] = Utils::MakeAnyFunc(failHandler);
 
