@@ -189,7 +189,7 @@ namespace Sari { namespace Utils {
                     reject(std::vector<std::any>{e});
                 }
                 catch (...) {
-                    reject(std::vector<std::any>{});
+                    reject();
                 }
             }
 
@@ -200,7 +200,7 @@ namespace Sari { namespace Utils {
                 });
             }
 
-            void resolve(const std::vector<std::any>& vargs)
+            void resolve(const std::vector<std::any>& vargs = std::vector<std::any>{})
             {
                 if (state_ != State::Pending) {
                     return;
@@ -228,7 +228,7 @@ namespace Sari { namespace Utils {
                     return;
                 }
                 catch (...) {
-                    reject(std::vector<std::any>{});
+                    reject();
                     return;
                 }
 
@@ -285,7 +285,7 @@ namespace Sari { namespace Utils {
 
             }
 
-            void reject(const std::vector<std::any>& vargs)
+            void reject(const std::vector<std::any>& vargs = std::vector<std::any>{})
             {
                 if (state_ != State::Pending) {
                     return;
@@ -293,25 +293,23 @@ namespace Sari { namespace Utils {
 
                 resolveHandlers_.erase(resolveHandlers_.begin(), resolveHandlers_.end());
 
-                bool handlerFound = false;
-                std::any result;
-
+                AnyFunction failHandler;
+                bool isCatchAllHandler = false;
+                
                 if (vargs.size() > 0) {
 
                     auto it = failHandlers_.find(std::type_index(vargs[0].type()));
                     
                     if (it != failHandlers_.end()) {
-                        handlerFound = true;
-                        
-                        result = it->second(vargs);
+                        failHandler = it->second;
                     }
                     else {
 
                         auto it2 = failHandlers_.find(std::type_index(typeid(void)));
                         
                         if (it2 != failHandlers_.end()) {
-                            handlerFound = true;
-                            result = it2->second(std::vector<std::any>{});
+                            failHandler = it2->second;
+                            isCatchAllHandler = true;
                         }
                     }
                 }
@@ -320,28 +318,60 @@ namespace Sari { namespace Utils {
                     auto it = failHandlers_.find(std::type_index(typeid(void)));
 
                     if (it != failHandlers_.end()) {
-                        handlerFound = true;
-                        result = it->second(std::vector<std::any>{});
+                        failHandler = it->second;
+                        isCatchAllHandler = true;
                     }
                 }
 
-                if (handlerFound) {
+                if (failHandler) {
 
-                    state_ = State::Fulfilled;
+                    try {
 
-                    if (parent_) {
-                        if (result.has_value()) {
-                            parent_->resolve(std::vector<std::any>{result});
+                        std::any result;
+
+                        if (isCatchAllHandler) {
+                            result = failHandler(std::vector<std::any>{});
                         }
                         else {
-                            parent_->resolve(std::vector<std::any>{});
+                            result = failHandler(vargs);
+                        }
+
+                        state_ = State::Fulfilled;
+
+                        if (parent_) {
+                            if (result.has_value()) {
+                                parent_->resolve(std::vector<std::any>{result});
+                            }
+                            else {
+                                parent_->resolve();
+                            }
+                        }
+                        else {
+                            if (result.has_value()) {
+                                result_ = std::vector<std::any>{result};
+                            }
                         }
                     }
-                    else {
-                        if (result.has_value()) {
-                            result_ = std::vector<std::any>{result};
+                    catch (const std::exception& e) {
+
+                        state_ = State::Rejected;
+
+                        if (parent_) {
+                            parent_->reject(std::vector<std::any>{e});
+                        }
+                        else {
+                            result_ = std::vector<std::any>{e};
                         }
                     }
+                    catch (...) {
+
+                        state_ = State::Rejected;
+
+                        if (parent_) {
+                            parent_->reject();
+                        }
+                    }
+
                 }
                 else {
 

@@ -4,11 +4,7 @@
 
 namespace asio = boost::asio;
 namespace Utils = Sari::Utils;
-
-boost::asio::any_io_executor test(asio::io_context& ioContext)
-{
-    return ioContext.get_executor();
-}
+namespace Asio = Sari::Asio;
 
 int main()
 {
@@ -18,34 +14,32 @@ int main()
 
         Utils::Promise p = Utils::Promise(
             ioContext,
-            [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
-            {
+            [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
                 resolve(2, 3);
             }
         );
 
-        p.then([](int x, int y) {
-            return x + y;
-        }).then([&ioContext](int sum) {
-
-            std::cout << sum << '\n';
-
-            return Utils::Promise::Resolve(ioContext, sum)
-                .then([](int sum) {
-                    return sum;
-                }).fail([](const std::exception& e) {
-                    std::cerr << "error2: " << e.what() << '\n';
-                    return 0;
-                });
-
-        }).then([](int sum) {
-            std::cout << "test: " << sum << "\n";
-        }).fail([](int ec) {
-            std::cerr << "error: " << ec << '\n';
-        }).fail([]() {
-            std::cerr << "error!\n";
+        p.then([&ioContext](int x, int y) {
+            int seconds = x + y;
+            auto t1 = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(seconds));
+            return Asio::AsyncWait(*t1).then([t1, seconds]() {
+                std::cout << "done!\n";
+                return seconds;
+            }).fail([]() {
+                std::cerr << "error!\n";
+                return 0;
+            });
+        }).then([](int seconds) {
+            return seconds;
+        }).then([](int seconds) {
+            std::cout << "seconds: " << seconds << "\n";
+            return seconds;
+        }).fail([](const boost::system::error_code& ec) {
+            std::cerr << "error" << ec << "\n";
         }).fail([](const std::exception& e) {
             std::cerr << "error: " << e.what() << '\n';
+        }).fail([]() {
+            std::cerr << "error!!!\n";
         });
 
         ioContext.run();
@@ -55,6 +49,6 @@ int main()
 
     }
     catch (const std::exception& e) {
-        std::cerr << "error: " << e.what() << '\n';
+        std::cerr << "-error: " << e.what() << '\n';
     }
 }
