@@ -24,10 +24,10 @@ namespace Sari { namespace Utils {
             impl_(nullptr)
         {}
 
-        Promise(boost::asio::io_service& service, const Executor& executor) :
-            impl_(std::make_shared<Impl>(service))
+        Promise(boost::asio::io_context& ioContext, const Executor& executor) :
+            impl_(std::make_shared<Impl>(ioContext))
         {
-            service.post([executor, impl = impl_]() {
+            boost::asio::post(ioContext, [executor, impl = impl_]() {
 
                 Utils::VariadicFunction resolve{
                     [impl](const std::vector<std::any>& vargs) {
@@ -60,9 +60,9 @@ namespace Sari { namespace Utils {
             return impl_ == nullptr;
         }
 
-        boost::asio::io_service& service()
+        boost::asio::io_context& ioContext()
         {
-            return impl_->service_;
+            return impl_->ioContext_;
         }
 
         State state() const
@@ -96,12 +96,12 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        static Promise Resolve(boost::asio::io_service& service, Args... args)
+        static Promise Resolve(boost::asio::io_context& ioContext, Args... args)
         {
             std::vector<std::any> vargs = { args... };
 
             return Promise(
-                service,
+                ioContext,
                 [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
                 {
                     resolve(vargs);
@@ -110,12 +110,12 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        static Promise Reject(boost::asio::io_service& service, Args... args)
+        static Promise Reject(boost::asio::io_context& ioContext, Args... args)
         {
             std::vector<std::any> vargs = { args... };
 
             return Promise(
-                service,
+                ioContext,
                 [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
                 {
                     reject(vargs);
@@ -127,15 +127,15 @@ namespace Sari { namespace Utils {
 
         struct Impl : public std::enable_shared_from_this<Impl> {
 
-            boost::asio::io_service& service_;
+            boost::asio::io_context& ioContext_;
             std::shared_ptr<Impl> parent_;
             State state_ = State::Pending;
             std::vector<std::any> result_;
             std::list<Utils::AnyFunction> resolveHandlers_;
             std::unordered_map<std::type_index, Utils::AnyFunction> failHandlers_;
 
-            Impl(boost::asio::io_service& service) :
-                service_(service)
+            Impl(boost::asio::io_context& ioContext) :
+                ioContext_(ioContext)
             {}
 
             void resolve(const std::vector<std::any>& vargs)
@@ -170,7 +170,7 @@ namespace Sari { namespace Utils {
                             state_ = State::Fulfilled;
                         }
                         else {
-                            promise = Promise::Resolve(service_, result);
+                            promise = Promise::Resolve(ioContext_, result);
                         }
                     }
                 }
@@ -179,7 +179,7 @@ namespace Sari { namespace Utils {
                         state_ = State::Fulfilled;
                     }
                     else {
-                        promise = Promise::Resolve(service_);
+                        promise = Promise::Resolve(ioContext_);
                     }
                 }
 
@@ -192,8 +192,8 @@ namespace Sari { namespace Utils {
                     promise.impl_->parent_ = shared_from_this();
 
                     promise.impl_->resolveHandlers_.push_back(
-                        [self = shared_from_this()](const std::vector<std::any>& vargs) {
-                            self->resolve(vargs);
+                        [parent = promise.impl_->parent_](const std::vector<std::any>& vargs) {
+                            parent->resolve(vargs);
                             return std::any{};
                         }
                     );

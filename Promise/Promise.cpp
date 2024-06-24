@@ -10,10 +10,10 @@ int main()
 {
     try {
 
-        asio::io_service service;
+        asio::io_context ioContext;
 
         Utils::Promise p = Utils::Promise(
-            service,
+            ioContext,
             [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
             {
                 resolve(2, 3);
@@ -22,13 +22,12 @@ int main()
 
         p.then([](int x, int y) {
             return x + y;
-        }).then([&service = p.service()](int sum) {
+        }).then([&ioCotext = p.ioContext()](int sum) {
 
             std::cout << sum << '\n';
 
-            return Utils::Promise::Resolve(service, sum)
-                .then([&service](int sum) {
-                    throw std::logic_error("ahoj");
+            return Utils::Promise::Resolve(ioCotext, sum)
+                .then([&ioCotext](int sum) {
                     return sum;
                 }).fail([](const std::exception& e) {
                     std::cerr << "error2: " << e.what() << '\n';
@@ -45,7 +44,7 @@ int main()
             std::cerr << "error: " << e.what() << '\n';
         });
 
-        service.run();
+        ioContext.run();
 
         std::cout << "state: " << static_cast<int>(p.state()) << '\n';
         std::cout << "result: " << p.result().size() << '\n';
