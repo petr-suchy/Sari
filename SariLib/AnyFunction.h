@@ -90,7 +90,7 @@ namespace Sari { namespace Utils {
 		{}
 
 		template<typename... Args>
-		std::any operator() (Args... args) const
+		std::any operator() (Args&&... args) const
 		{
 			std::vector<std::any> vargs = { args... };
 			return func_(vargs);
@@ -103,7 +103,7 @@ namespace Sari { namespace Utils {
 	};
 
 	template<typename... Args>
-	static std::any CallAnyFunc(const AnyFunction& f, Args... args)
+	static std::any CallAnyFunc(const AnyFunction& f, Args&&... args)
 	{
 		std::vector<std::any> vargs = { args... };
 		return f(vargs);
