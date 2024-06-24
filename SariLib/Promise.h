@@ -18,31 +18,39 @@ namespace Sari { namespace Utils {
             Pending, Fulfilled, Rejected
         };
 
+        enum class Execute {
+            Immediately, Scheduled
+        };
+
         using Executor = std::function<void(Utils::VariadicFunction, Utils::VariadicFunction)>;
 
         Promise() :
             impl_(nullptr)
         {}
 
-        Promise(boost::asio::io_context& ioContext, const Executor& executor, bool immediately = false) :
+        Promise(boost::asio::io_context& ioContext, const Executor& executor, Execute execute = Execute::Scheduled) :
             impl_(std::make_shared<Impl>(ioContext.get_executor()))
         {
-            if (immediately) {
-                impl_->callExecutor(executor);
-            }
-            else {
-                impl_->postExecutor(executor);
+            switch (execute) {
+                case Execute::Immediately:
+                    impl_->callExecutor(executor);
+                break;
+                case Execute::Scheduled:
+                    impl_->postExecutor(executor);
+                break;
             }
         }
         
-        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor, bool immediately = false) :
+        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor, Execute execute = Execute::Scheduled) :
             impl_(std::make_shared<Impl>(ioExecutor))
         {
-            if (immediately) {
-                impl_->callExecutor(executor);
-            }
-            else {
-                impl_->postExecutor(executor);
+            switch (execute) {
+                case Execute::Immediately:
+                    impl_->callExecutor(executor);
+                break;
+                case Execute::Scheduled:
+                    impl_->postExecutor(executor);
+                break;
             }
         }
 
@@ -241,10 +249,10 @@ namespace Sari { namespace Utils {
 
                         switch (promise.state()) {
                             case State::Fulfilled:
-                                promise = Promise::ResolveWithVector(promise.getExecutor(), promise.result());
+                                promise = Promise::ResolveWithVector(ioExecutor_, promise.result());
                             break;
                             case State::Rejected:
-                                promise = Promise::RejectWithVector(promise.getExecutor(), promise.result());
+                                promise = Promise::RejectWithVector(ioExecutor_, promise.result());
                             break;
                         }
                     }
