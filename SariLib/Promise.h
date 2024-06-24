@@ -24,16 +24,26 @@ namespace Sari { namespace Utils {
             impl_(nullptr)
         {}
 
-        Promise(boost::asio::io_context& ioContext, const Executor& executor) :
+        Promise(boost::asio::io_context& ioContext, const Executor& executor, bool immediately = false) :
             impl_(std::make_shared<Impl>(ioContext.get_executor()))
         {
-            impl_->postExecutor(executor);
+            if (immediately) {
+                impl_->callExecutor(executor);
+            }
+            else {
+                impl_->postExecutor(executor);
+            }
         }
         
-        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor) :
+        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor, bool immediately = false) :
             impl_(std::make_shared<Impl>(ioExecutor))
         {
-            impl_->postExecutor(executor);
+            if (immediately) {
+                impl_->callExecutor(executor);
+            }
+            else {
+                impl_->postExecutor(executor);
+            }
         }
 
         bool isNull() const
@@ -76,18 +86,21 @@ namespace Sari { namespace Utils {
             return *this;
         }
 
+        static Promise ResolveWithVector(boost::asio::any_io_executor ioExecutor, const std::vector<std::any>& vargs)
+        {
+            return Promise(
+                ioExecutor,
+                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+                    resolve(vargs);
+                }
+            );
+        }
+
         template<typename... Args>
         static Promise Resolve(boost::asio::any_io_executor ioExecutor, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
-
-            return Promise(
-                ioExecutor,
-                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
-                {
-                    resolve(vargs);
-                }
-            );
+            return ResolveWithVector(ioExecutor, vargs);
         }
 
         template<typename... Args>
@@ -97,23 +110,27 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        static Promise Reject(boost::asio::any_io_executor ioExecutor, Args&&... args)
+        static Promise RejectWithVector(boost::asio::any_io_executor ioExecutor, const std::vector<std::any>& vargs)
         {
-            std::vector<std::any> vargs = { args... };
-
             return Promise(
                 ioExecutor,
-                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject)
-                {
+                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
                     reject(vargs);
                 }
             );
         }
 
         template<typename... Args>
+        static Promise Reject(boost::asio::any_io_executor ioExecutor, Args&&... args)
+        {
+            std::vector<std::any> vargs = { args... };
+            return RejectWithVector(ioExecutor, vargs);
+        }
+
+        template<typename... Args>
         static Promise Reject(boost::asio::io_context& ioContext, Args&&... args)
         {
-            Reject(ioContext.get_executor(), std::forward<Args>(args)...);
+            return Reject(ioContext.get_executor(), std::forward<Args>(args)...);
         }
 
     private:
@@ -131,33 +148,37 @@ namespace Sari { namespace Utils {
                 ioExecutor_(ioExecutor)
             {}
 
+            void callExecutor(const Executor& executor)
+            {
+                Utils::VariadicFunction resolve{
+                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                        impl->resolve(vargs);
+                        return std::any{};
+                    }
+                };
+
+                Utils::VariadicFunction reject{
+                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                        impl->reject(vargs);
+                        return std::any{};
+                    }
+                };
+
+                try {
+                    executor(resolve, reject);
+                }
+                catch (const std::exception& e) {
+                    reject(std::vector<std::any>{e});
+                }
+                catch (...) {
+                    reject(std::vector<std::any>{});
+                }
+            }
+
             void postExecutor(const Executor& executor)
             {
-                boost::asio::post(ioExecutor_, [executor, impl = shared_from_this()]() {
-
-                    Utils::VariadicFunction resolve{
-                        [impl](const std::vector<std::any>& vargs) {
-                            impl->resolve(vargs);
-                            return std::any{};
-                        }
-                    };
-
-                    Utils::VariadicFunction reject{
-                        [impl](const std::vector<std::any>& vargs) {
-                            impl->reject(vargs);
-                            return std::any{};
-                        }
-                    };
-
-                    try {
-                        executor(resolve, reject);
-                    }
-                    catch (const std::exception& e) {
-                        impl->reject(std::vector<std::any>{e});
-                    }
-                    catch (...) {
-                        impl->reject(std::vector<std::any>{});
-                    }
+                boost::asio::post(ioExecutor_, [impl = shared_from_this(), executor]() {
+                    impl->callExecutor(executor);
                 });
             }
 
@@ -185,7 +206,17 @@ namespace Sari { namespace Utils {
             
                 if (result.has_value()) {
                     if (result.type() == typeid(Promise)) {
+
                         promise = std::any_cast<Promise>(result);
+
+                        switch (promise.state()) {
+                            case State::Fulfilled:
+                                promise = Promise::ResolveWithVector(promise.getExecutor(), promise.result());
+                            break;
+                            case State::Rejected:
+                                promise = Promise::RejectWithVector(promise.getExecutor(), promise.result());
+                            break;
+                        }
                     }
                     else {
                         if (resolveHandlers_.empty()) {
