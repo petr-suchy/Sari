@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnyFunction.h" />
+    <ClInclude Include="Asio.h" />
     <ClInclude Include="FunctionSignature.h" />
     <ClInclude Include="Promise.h" />
   </ItemGroup>

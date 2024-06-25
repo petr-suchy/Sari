@@ -29,5 +29,8 @@
     <ClInclude Include="Promise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Asio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
