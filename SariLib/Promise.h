@@ -14,11 +14,19 @@ namespace Sari { namespace Utils {
     class Promise {
     public:
 
+        enum class Execute {
+            Async
+        };
+
         enum class State {
             Pending, Fulfilled, Rejected
         };
 
         using Executor = std::function<void(Utils::VariadicFunction, Utils::VariadicFunction)>;
+
+        struct AsyncAttr{};
+
+        static constexpr AsyncAttr Async{};
 
         Promise() :
             impl_(nullptr)
@@ -27,13 +35,25 @@ namespace Sari { namespace Utils {
         Promise(boost::asio::io_context& ioContext, const Executor& executor) :
             impl_(std::make_shared<Impl>(ioContext.get_executor()))
         {
-            impl_->callExecutor(executor);
+            impl_->launchExecutor(executor);
+        }
+
+        Promise(boost::asio::io_context& ioContext, const Executor& executor, AsyncAttr) :
+            impl_(std::make_shared<Impl>(ioContext.get_executor()))
+        {
+            impl_->launchExecutor(executor, Async);
         }
         
         Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor) :
             impl_(std::make_shared<Impl>(ioExecutor))
         {
-            impl_->callExecutor(executor);
+            impl_->launchExecutor(executor);
+        }
+
+        Promise(boost::asio::any_io_executor ioExecutor, const Executor& executor, AsyncAttr) :
+            impl_(std::make_shared<Impl>(ioExecutor))
+        {
+            impl_->launchExecutor(executor, Async);
         }
 
         bool isNull() const
@@ -147,10 +167,10 @@ namespace Sari { namespace Utils {
                 ioExecutor_(ioExecutor)
             {}
 
-            void callExecutor(const Executor& executor)
+            void launchExecutor(const Executor& executor)
             {
                 Utils::VariadicFunction resolve{
-                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                    [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->resolve(vargs);
                         });
@@ -159,7 +179,7 @@ namespace Sari { namespace Utils {
                 };
 
                 Utils::VariadicFunction reject{
-                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                    [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->reject(vargs);
                         });
@@ -167,6 +187,30 @@ namespace Sari { namespace Utils {
                     }
                 };
 
+                callExecutor(executor, resolve, reject);
+            }
+
+            void launchExecutor(const Executor& executor, AsyncAttr)
+            {
+                Utils::VariadicFunction resolve{
+                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                        impl->resolve(vargs);
+                        return std::any{};
+                    }
+                };
+
+                Utils::VariadicFunction reject{
+                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
+                        impl->reject(vargs);
+                        return std::any{};
+                    }
+                };
+
+                callExecutor(executor, resolve, reject);
+            }
+
+            void callExecutor(const Executor& executor, const Utils::VariadicFunction& resolve, const Utils::VariadicFunction& reject)
+            {
                 try {
                     executor(resolve, reject);
                 }
