@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Executable", "Executable", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Promise", "Promise\Promise.vcxproj", "{97DD0E36-059F-42BC-A344-DA61E758A6FE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socks5Server", "Socks5Server\Socks5Server.vcxproj", "{4E96118B-DC69-4C83-8772-6D75CF4775A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -43,6 +45,14 @@ Global
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE}.Release|x64.Build.0 = Release|x64
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE}.Release|x86.ActiveCfg = Release|Win32
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE}.Release|x86.Build.0 = Release|Win32
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Debug|x64.ActiveCfg = Debug|x64
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Debug|x64.Build.0 = Debug|x64
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Debug|x86.ActiveCfg = Debug|Win32
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Debug|x86.Build.0 = Debug|Win32
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Release|x64.ActiveCfg = Release|x64
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Release|x64.Build.0 = Release|x64
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Release|x86.ActiveCfg = Release|Win32
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +60,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9B278F81-EE1E-4A65-A7AC-6C8861866FC4} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
+		{4E96118B-DC69-4C83-8772-6D75CF4775A1} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0EC27A05-5F1E-411C-B7E6-AFAB68C905CF}
