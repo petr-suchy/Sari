@@ -15,8 +15,37 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Socks5Server.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5Raw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5MethReply.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5MethReq.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5Addr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5CmdReply.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5CmdReq.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5Errc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

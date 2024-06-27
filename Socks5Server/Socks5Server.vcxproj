@@ -141,12 +141,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Socks5Server.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SariLib\SariLib.vcxproj">
       <Project>{fa656fff-2110-44b5-a062-61dc29a6ef93}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Server.h" />
+    <ClInclude Include="Socks5.h" />
+    <ClInclude Include="Socks5Addr.h" />
+    <ClInclude Include="Socks5CmdReply.h" />
+    <ClInclude Include="Socks5CmdReq.h" />
+    <ClInclude Include="Socks5Errc.h" />
+    <ClInclude Include="Socks5MethReply.h" />
+    <ClInclude Include="Socks5MethReq.h" />
+    <ClInclude Include="Socks5Raw.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
