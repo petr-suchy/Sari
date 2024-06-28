@@ -75,3 +75,46 @@ promise.then([&](std::string value) {
 
 ioContext.run();
 ```
+
+## 5 Asynchronous Functions
+
+An asynchronous function is a function that takes an object, starts an asynchronous operation on it, and returns a Promise object.
+
+```cpp
+template<typename Object>
+Utils::Promise AsyncWait(Object& object)
+{
+    return Utils::Promise(
+        object.get_executor(),
+        [&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+            object.async_wait([=](const boost::system::error_code& ec) {
+                if (ec) { // error?
+                    reject(ec);
+                }
+                else {
+                    resolve();
+                }
+            });
+        },
+        Utils::Promise::Async
+    );
+}
+
+```
+
+The `AsyncWait` function sets up an asynchronous wait operation on the provided timer object, and depending on the result of this operation, it either resolves or rejects the promise.
+
+```cpp
+auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(5));
+
+AsyncWait(*timer)
+    .then([timer]() {
+        std::cout << "Time elapsed!";
+    })
+    .fail([](boost::system::error_code ec) {
+        std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
+    });
+
+ioContext.run();
+```
+Notice that `AsyncWait` takes a reference to the timer object. This means that caller of the `AsyncWait` function has the responsibility of keeping the timer object alive until the wait operation is complete. Making the timer object a shared pointer and capturing that pointer in a lambda is good way to do this.
