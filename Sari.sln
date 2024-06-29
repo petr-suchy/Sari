@@ -5,15 +5,13 @@ VisualStudioVersion = 16.0.33214.272
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SariLib", "SariLib\SariLib.vcxproj", "{FA656FFF-2110-44B5-A062-61DC29A6EF93}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnyFunction", "AnyFunction\AnyFunction.vcxproj", "{9B278F81-EE1E-4A65-A7AC-6C8861866FC4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Promise", "Promise\Promise.vcxproj", "{97DD0E36-059F-42BC-A344-DA61E758A6FE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnyFunction", "examples\AnyFunction\AnyFunction.vcxproj", "{9B278F81-EE1E-4A65-A7AC-6C8861866FC4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socks5Server", "Socks5Server\Socks5Server.vcxproj", "{4E96118B-DC69-4C83-8772-6D75CF4775A1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Promise", "examples\Promise\Promise.vcxproj", "{97DD0E36-059F-42BC-A344-DA61E758A6FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{B4D3B569-BA84-41EB-B29C-2C9A24028B4C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socks5Server", "examples\Socks5Server\Socks5Server.vcxproj", "{4E96118B-DC69-4C83-8772-6D75CF4775A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,7 +58,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{FA656FFF-2110-44B5-A062-61DC29A6EF93} = {B4D3B569-BA84-41EB-B29C-2C9A24028B4C}
 		{9B278F81-EE1E-4A65-A7AC-6C8861866FC4} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{4E96118B-DC69-4C83-8772-6D75CF4775A1} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}

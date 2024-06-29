@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9b278f81-ee1e-4a65-a7ac-6c8861866fc4}</ProjectGuid>
-    <RootNamespace>AnyFunction</RootNamespace>
+    <ProjectGuid>{4e96118b-dc69-4c83-8772-6d75cf4775a1}</ProjectGuid>
+    <RootNamespace>Socks5Server</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -88,8 +88,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>../../SariLib/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>../SariLib/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,10 +141,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AnyFunction.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SariLib\SariLib.vcxproj">
+    <ClInclude Include="Server.h" />
+    <ClInclude Include="Socks5Server.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SariLib\SariLib.vcxproj">
       <Project>{fa656fff-2110-44b5-a062-61dc29a6ef93}</Project>
     </ProjectReference>
   </ItemGroup>
