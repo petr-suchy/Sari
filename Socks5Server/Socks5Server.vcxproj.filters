@@ -47,5 +47,8 @@
     <ClInclude Include="Socks5Errc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Socks5Server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

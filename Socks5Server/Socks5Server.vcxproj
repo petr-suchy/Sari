@@ -158,6 +158,7 @@
     <ClInclude Include="Socks5MethReply.h" />
     <ClInclude Include="Socks5MethReq.h" />
     <ClInclude Include="Socks5Raw.h" />
+    <ClInclude Include="Socks5Server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
