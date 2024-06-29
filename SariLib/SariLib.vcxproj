@@ -160,6 +160,19 @@
     <ClInclude Include="ForwardStream.h" />
     <ClInclude Include="FunctionSignature.h" />
     <ClInclude Include="Promise.h" />
+    <ClInclude Include="src\sari\asio\asio.h" />
+    <ClInclude Include="src\sari\socks5\addr.h" />
+    <ClInclude Include="src\sari\socks5\cmd_reply.h" />
+    <ClInclude Include="src\sari\socks5\cmd_req.h" />
+    <ClInclude Include="src\sari\socks5\errc.h" />
+    <ClInclude Include="src\sari\socks5\meth_reply.h" />
+    <ClInclude Include="src\sari\socks5\meth_req.h" />
+    <ClInclude Include="src\sari\socks5\raw.h" />
+    <ClInclude Include="src\sari\socks5\socks5.h" />
+    <ClInclude Include="src\sari\stream\forward.h" />
+    <ClInclude Include="src\sari\utils\any_function.h" />
+    <ClInclude Include="src\sari\utils\function_signature.h" />
+    <ClInclude Include="src\sari\utils\promise.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

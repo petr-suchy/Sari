@@ -2,7 +2,8 @@
 
 #include <memory>
 #include <functional>
-#include "Promise.h"
+
+#include "../utils/promise.h"
 
 namespace Sari { namespace Stream {
 

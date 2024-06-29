@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../SariLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../SariLib/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -150,14 +150,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server.h" />
-    <ClInclude Include="Socks5.h" />
-    <ClInclude Include="Socks5Addr.h" />
-    <ClInclude Include="Socks5CmdReply.h" />
-    <ClInclude Include="Socks5CmdReq.h" />
-    <ClInclude Include="Socks5Errc.h" />
-    <ClInclude Include="Socks5MethReply.h" />
-    <ClInclude Include="Socks5MethReq.h" />
-    <ClInclude Include="Socks5Raw.h" />
     <ClInclude Include="Socks5Server.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

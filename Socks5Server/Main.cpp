@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "Server.h"
-#include "Socks5.h"
 #include "Socks5Server.h"
 
 namespace Asio = Sari::Asio;

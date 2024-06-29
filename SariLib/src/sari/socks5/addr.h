@@ -5,7 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/endian/conversion.hpp>
-#include "Socks5Raw.h"
+
+#include "raw.h"
 
 namespace Socks5 {
 

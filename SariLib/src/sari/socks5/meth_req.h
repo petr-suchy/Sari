@@ -3,7 +3,8 @@
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
-#include "Socks5Raw.h"
+
+#include "raw.h"
 
 namespace Socks5 {
 

@@ -6,8 +6,9 @@
 #include <list>
 #include <map>
 #include <boost/asio.hpp>
-#include "FunctionSignature.h"
-#include "AnyFunction.h"
+
+#include "function_signature.h"
+#include "any_function.h"
 
 namespace Sari { namespace Utils {
 

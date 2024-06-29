@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Socks5Addr.h"
+#include "addr.h"
 
 namespace Socks5 {
 

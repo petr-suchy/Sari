@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Socks5Raw.h"
+#include "raw.h"
 
 namespace Socks5 {
 

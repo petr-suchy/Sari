@@ -13,6 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{cf6b3234-6325-41dc-af4c-7a76de4049e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sari">
+      <UniqueIdentifier>{d313736d-7cca-4b83-9c90-ff2edde9c423}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sari\utils">
+      <UniqueIdentifier>{5e319495-adc4-4044-bed5-502f9bb40f7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sari\stream">
+      <UniqueIdentifier>{ff47df5d-b745-4844-acaa-b4956c449219}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sari\socks5">
+      <UniqueIdentifier>{cf8b384a-2701-47b0-9ce2-4142aba5aa76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sari\asio">
+      <UniqueIdentifier>{5c8e9436-3e0d-4584-9768-cd6a25a13b4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SariLib.cpp">
@@ -34,6 +52,45 @@
     </ClInclude>
     <ClInclude Include="ForwardStream.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\utils\any_function.h">
+      <Filter>src\sari\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\utils\function_signature.h">
+      <Filter>src\sari\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\utils\promise.h">
+      <Filter>src\sari\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\stream\forward.h">
+      <Filter>src\sari\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\addr.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\cmd_reply.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\cmd_req.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\errc.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\meth_reply.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\meth_req.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\raw.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\socks5\socks5.h">
+      <Filter>src\sari\socks5</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\asio\asio.h">
+      <Filter>src\sari\asio</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

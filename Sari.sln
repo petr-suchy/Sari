@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SariLib", "SariLib\SariLib.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AnyFunction", "AnyFunction\AnyFunction.vcxproj", "{9B278F81-EE1E-4A65-A7AC-6C8861866FC4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Executable", "Executable", "{EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Promise", "Promise\Promise.vcxproj", "{97DD0E36-059F-42BC-A344-DA61E758A6FE}"
 EndProject

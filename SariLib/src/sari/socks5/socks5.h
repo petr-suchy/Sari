@@ -1,12 +1,13 @@
 #pragma once
 
 #include <boost/array.hpp>
-#include "Socks5Errc.h"
-#include "Socks5MethReq.h"
-#include "Socks5MethReply.h"
-#include "Socks5CmdReq.h"
-#include "Socks5CmdReply.h"
-#include "Asio.h"
+
+#include "errc.h"
+#include "meth_req.h"
+#include "meth_reply.h"
+#include "cmd_req.h"
+#include "cmd_reply.h"
+#include "../asio/asio.h"
 
 namespace Socks5 {
 

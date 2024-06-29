@@ -76,7 +76,7 @@ promise.then([&](std::string value) {
 ioContext.run();
 ```
 
-## 5 Asynchronous Functions
+## 5. Asynchronous Functions
 
 An asynchronous function is a function that takes an object, starts an asynchronous operation on it, and returns a Promise object.
 

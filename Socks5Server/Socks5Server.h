@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Socks5.h"
-#include "ForwardStream.h"
+#include "sari/socks5/socks5.h"
+#include "sari/stream/forward.h"
 
 template<typename Stream>
 Sari::Utils::Promise Socks5Server(Stream&& sock)
