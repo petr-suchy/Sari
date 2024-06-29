@@ -8,7 +8,7 @@
 
 #include "raw.h"
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	class Address {
 	public:
@@ -117,5 +117,6 @@ namespace Socks5 {
 
 	};
 
-}
+}}
+
 

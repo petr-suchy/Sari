@@ -6,7 +6,7 @@
 
 #include "raw.h"
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	class MethodRequest {
 	public:
@@ -53,4 +53,4 @@ namespace Socks5 {
 
 	};
 
-}
+}}

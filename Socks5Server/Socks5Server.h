@@ -6,6 +6,7 @@
 template<typename Stream>
 Sari::Utils::Promise Socks5Server(Stream&& sock)
 {
+    namespace Socks5 = Sari::Socks5;
     using Sari::Utils::Promise;
 
     auto iSock = std::make_shared<boost::asio::ip::tcp::socket>(std::move(sock));

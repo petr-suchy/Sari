@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	const unsigned char ProtocolVersion = 0x05;
 
@@ -66,4 +66,4 @@ namespace Socks5 {
 		RawAddress bind;
 	};
 
-}
+}}

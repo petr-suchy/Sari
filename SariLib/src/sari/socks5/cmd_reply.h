@@ -2,7 +2,7 @@
 
 #include "addr.h"
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	class CommandReply {
 	public:
@@ -55,4 +55,5 @@ namespace Socks5 {
 
 	};
 
-}
+}}
+

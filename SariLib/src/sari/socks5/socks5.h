@@ -9,7 +9,7 @@
 #include "cmd_reply.h"
 #include "../asio/asio.h"
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	template<typename Stream>
 	Sari::Utils::Promise AsyncSendMethodRequest(Stream& stream, const MethodRequest& methReq)
@@ -272,4 +272,4 @@ namespace Socks5 {
 		});
 	}
 
-}
+}}

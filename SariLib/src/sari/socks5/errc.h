@@ -21,7 +21,7 @@ namespace boost {
     }
 }
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
     // Define a custom error code category derived from boost::system::error_category
     class Socks5Errc_category : public boost::system::error_category {
@@ -54,11 +54,12 @@ namespace Socks5 {
 
     };
 
-}
+}}
 
-extern inline const Socks5::Socks5Errc_category& Socks5Errc_category()
+
+extern inline const Sari::Socks5::Socks5Errc_category& Socks5Errc_category()
 {
-    static Socks5::Socks5Errc_category c;
+    static Sari::Socks5::Socks5Errc_category c;
     return c;
 }
 

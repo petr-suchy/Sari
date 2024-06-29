@@ -2,7 +2,7 @@
 
 #include "raw.h"
 
-namespace Socks5 {
+namespace Sari { namespace Socks5 {
 
 	class MethodReply {
 	public:
@@ -33,4 +33,4 @@ namespace Socks5 {
 
 	};
 
-}
+}}
