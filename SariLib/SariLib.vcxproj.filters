@@ -31,6 +31,9 @@
     <Filter Include="src\sari\asio">
       <UniqueIdentifier>{5c8e9436-3e0d-4584-9768-cd6a25a13b4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\sari\string">
+      <UniqueIdentifier>{9a2596f3-ad00-4bbe-bbf6-5b34027b6d3d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SariLib.cpp">
@@ -62,9 +65,6 @@
     <ClInclude Include="src\sari\utils\promise.h">
       <Filter>src\sari\utils</Filter>
     </ClInclude>
-    <ClInclude Include="src\sari\stream\forward.h">
-      <Filter>src\sari\stream</Filter>
-    </ClInclude>
     <ClInclude Include="src\sari\socks5\addr.h">
       <Filter>src\sari\socks5</Filter>
     </ClInclude>
@@ -91,6 +91,30 @@
     </ClInclude>
     <ClInclude Include="src\sari\asio\asio.h">
       <Filter>src\sari\asio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\stream\forward.h">
+      <Filter>src\sari\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\split.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\range.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\split_base.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\split_by_string.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\split_by_blank.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\split_by_char.h">
+      <Filter>src\sari\string</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\string\trim.h">
+      <Filter>src\sari\string</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
