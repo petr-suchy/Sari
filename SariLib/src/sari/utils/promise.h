@@ -15,10 +15,6 @@ namespace Sari { namespace Utils {
     class Promise {
     public:
 
-        enum class Execute {
-            Async
-        };
-
         enum class State {
             Pending, Fulfilled, Rejected
         };
@@ -26,8 +22,9 @@ namespace Sari { namespace Utils {
         using Executor = std::function<void(Utils::VariadicFunction, Utils::VariadicFunction)>;
 
         struct AsyncAttr{};
-
         static constexpr AsyncAttr Async{};
+
+        using FinalizeHandler = std::function<void(Promise)>;
 
         Promise() :
             impl_(nullptr)
@@ -69,7 +66,7 @@ namespace Sari { namespace Utils {
 
         State state() const
         {
-            return impl_->state_;
+            return impl_->state();
         }
 
         const std::vector<std::any>& result() const
@@ -111,6 +108,22 @@ namespace Sari { namespace Utils {
             }
 
             impl_->failHandlers_[std::type_index(typeid(FuncSign::Params::Type))] = Utils::MakeAnyFunc(failHandler);
+
+            return *this;
+        }
+
+        Promise finalize(FinalizeHandler finalizeHandler)
+        {
+            switch (state()) {
+                case State::Fulfilled:
+                    throw std::logic_error("attempt to add a finalize handler for fulfilled promise");
+                break;
+                case State::Rejected:
+                    throw std::logic_error("attempt to add a finalize handler for rejected promise");
+                break;
+            }
+
+            impl_->finalizeHandlers_.push_back(finalizeHandler);
 
             return *this;
         }
@@ -163,10 +176,32 @@ namespace Sari { namespace Utils {
             std::vector<std::any> result_;
             std::list<Utils::AnyFunction> resolveHandlers_;
             std::unordered_map<std::type_index, Utils::AnyFunction> failHandlers_;
+            std::list<FinalizeHandler> finalizeHandlers_;
 
             Impl(boost::asio::any_io_executor ioExecutor) :
                 ioExecutor_(ioExecutor)
             {}
+
+            State state() const
+            {
+                return state_;
+            }
+
+            State state(State newState, const std::vector<std::any>& result = {})
+            {
+                if (state_ != State::Pending) {
+                    return state_;
+                }
+
+                state_ = newState;
+                result_ = result;
+
+                for (auto& finalizeHandler : finalizeHandlers_) {
+                    finalizeHandler(Promise{shared_from_this()});
+                }
+
+                return state_;
+            }
 
             void launchExecutor(const Executor& executor)
             {
@@ -229,15 +264,14 @@ namespace Sari { namespace Utils {
 
             void resolve(const std::vector<std::any>& vargs = std::vector<std::any>{})
             {
-                if (state_ != State::Pending) {
+                if (state() != State::Pending) {
                     return;
                 }
             
                 // If there is no other resolve handler in the queue, the promise is fulfilled
                 // and the arguments are available through public function result().
                 if (resolveHandlers_.empty()) {
-                    result_ = vargs;
-                    state_ = State::Fulfilled;
+                    state(State::Fulfilled, vargs);
                     return;
                 }
 
@@ -267,8 +301,7 @@ namespace Sari { namespace Utils {
                     }
                     else {
                         if (resolveHandlers_.empty()) {
-                            result_ = std::vector<std::any>{ result };
-                            state_ = State::Fulfilled;
+                            state(State::Fulfilled, std::vector<std::any>{ result });
                         }
                         else {
                             promise = Promise::Resolve(ioExecutor_, result);
@@ -277,7 +310,7 @@ namespace Sari { namespace Utils {
                 }
                 else {
                     if (resolveHandlers_.empty()) {
-                        state_ = State::Fulfilled;
+                        state(State::Fulfilled);
                     }
                     else {
                         promise = Promise::Resolve(ioExecutor_);
@@ -304,7 +337,7 @@ namespace Sari { namespace Utils {
 
             void reject(const std::vector<std::any>& vargs = std::vector<std::any>{})
             {
-                if (state_ != State::Pending) {
+                if (state() != State::Pending) {
                     return;
                 }
 
@@ -352,7 +385,12 @@ namespace Sari { namespace Utils {
                             result = failHandler(vargs);
                         }
 
-                        state_ = State::Fulfilled;
+                        if (result.has_value()) {
+                            state(State::Fulfilled, std::vector<std::any>{ result });
+                        }
+                        else {
+                            state(State::Fulfilled);
+                        }
 
                         if (parent_) {
                             if (result.has_value()) {
@@ -362,26 +400,18 @@ namespace Sari { namespace Utils {
                                 parent_->resolve();
                             }
                         }
-                        else {
-                            if (result.has_value()) {
-                                result_ = std::vector<std::any>{result};
-                            }
-                        }
                     }
                     catch (const std::exception& e) {
 
-                        state_ = State::Rejected;
+                        state(State::Rejected, std::vector<std::any>{ e });
 
                         if (parent_) {
                             parent_->reject(std::vector<std::any>{e});
                         }
-                        else {
-                            result_ = std::vector<std::any>{e};
-                        }
                     }
                     catch (...) {
 
-                        state_ = State::Rejected;
+                        state(State::Rejected);
 
                         if (parent_) {
                             parent_->reject();
@@ -391,13 +421,10 @@ namespace Sari { namespace Utils {
                 }
                 else {
 
-                    state_ = State::Rejected;
+                    state(State::Rejected, vargs);
 
                     if (parent_) {
                         parent_->reject(vargs);
-                    }
-                    else {
-                        result_ = vargs;
                     }
                 }
             }
@@ -405,6 +432,10 @@ namespace Sari { namespace Utils {
         };
 
         std::shared_ptr<Impl> impl_;
+
+        Promise(std::shared_ptr<Impl> impl) :
+            impl_(impl)
+        {}
 
     };
 
