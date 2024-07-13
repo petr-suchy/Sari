@@ -325,10 +325,11 @@ namespace Sari { namespace Utils {
 
                     promise.impl_->parent_ = shared_from_this();
 
-                    promise.impl_->resolveHandlers_.push_back(
-                        [parent = promise.impl_->parent_](const std::vector<std::any>& vargs) {
-                            parent->resolve(vargs);
-                            return std::any{};
+                    promise.impl_->finalizeHandlers_.push_back(
+                        [parent = promise.impl_->parent_](Promise me) {
+                            if (me.state() == State::Fulfilled) {
+                                parent->resolve(me.result());
+                            }
                         }
                     );
                 }
