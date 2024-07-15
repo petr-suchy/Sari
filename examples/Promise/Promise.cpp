@@ -80,10 +80,13 @@ int main()
     {
         int n = 10;
 
+        // The following code sets up an asynchronous task that runs up to n times.
+
         auto task = [&ioContext, n](int i) {
 
             if (i < n) {
 
+                // Each iteration waits for 1 second before printing the current iteration number.
                 auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(1));
 
                 return AsyncWait(*timer)
@@ -93,13 +96,17 @@ int main()
                     });
             }
             else {
+                // End of iteration.
                 return Utils::Promise::Resolve(ioContext, false, i);
             }
 
         };
 
+        // Repeats the task starting with the initial value 0 and continues until the task
+        // returns a promise resolved with false.
         Utils::Promise::Repeat(ioContext, task, 0)
             .then([](int x) {
+                // After completing n iterations, it prints a completion message.
                 std::cout << "Done with " << x << ".\n";
             }).fail([](const boost::system::error_code& ec) {
                 std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
