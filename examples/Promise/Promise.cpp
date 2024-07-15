@@ -63,16 +63,47 @@ int main()
 
     {
 
-    auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(5));
+    auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(3));
 
     AsyncWait(*timer)
         .then([timer]() {
-            std::cout << "Time elapsed!";
+            std::cout << "Time elapsed!\n";
         })
-        .fail([](boost::system::error_code ec) {
+        .fail([](const boost::system::error_code& ec) {
             std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
         });
 
+    }
+
+    // Example #3:
+
+    {
+        int n = 10;
+
+        auto task = [&ioContext, n](int i) {
+
+            if (i < n) {
+
+                auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(1));
+
+                return AsyncWait(*timer)
+                    .then([&ioContext, i, timer]() {
+                        std::cout << i << '\n';
+                        return Utils::Promise::Resolve(ioContext, true, i + 1);
+                    });
+            }
+            else {
+                return Utils::Promise::Resolve(ioContext, false, i);
+            }
+
+        };
+
+        Utils::Promise::Repeat(ioContext, task, 0)
+            .then([](int x) {
+                std::cout << "Done with " << x << ".\n";
+            }).fail([](const boost::system::error_code& ec) {
+                std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
+            });
     }
 
     ioContext.run();

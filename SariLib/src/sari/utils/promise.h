@@ -19,7 +19,7 @@ namespace Sari { namespace Utils {
             Pending, Fulfilled, Rejected
         };
 
-        using Executor = std::function<void(Utils::VariadicFunction, Utils::VariadicFunction)>;
+        using Executor = std::function<void(VariadicFunction, VariadicFunction)>;
 
         struct AsyncAttr{};
         static constexpr AsyncAttr Async{};
@@ -87,7 +87,7 @@ namespace Sari { namespace Utils {
             }
 
             impl_->resolveHandlers_.push_back(
-                Utils::MakeAnyFunc(resolveHandler)
+                MakeAnyFunc(resolveHandler)
             );
 
             return *this;
@@ -107,7 +107,7 @@ namespace Sari { namespace Utils {
                 break;
             }
 
-            impl_->failHandlers_[std::type_index(typeid(FuncSign::Params::Type))] = Utils::MakeAnyFunc(failHandler);
+            impl_->failHandlers_[std::type_index(typeid(FuncSign::Params::Type))] = MakeAnyFunc(failHandler);
 
             return *this;
         }
@@ -135,7 +135,7 @@ namespace Sari { namespace Utils {
 
             return Promise(
                 ioExecutor,
-                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+                [vargs](VariadicFunction resolve, VariadicFunction reject) {
                     resolve(vargs);
                 }
             );
@@ -154,7 +154,7 @@ namespace Sari { namespace Utils {
 
             return Promise(
                 ioExecutor,
-                [vargs](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+                [vargs](VariadicFunction resolve, VariadicFunction reject) {
                     reject(vargs);
                 }
             );
@@ -166,6 +166,26 @@ namespace Sari { namespace Utils {
             return Reject(ioContext.get_executor(), std::forward<Args>(args)...);
         }
 
+        template<typename F, typename... Args>
+        static Promise Repeat(boost::asio::any_io_executor ioExecutor, F task, Args&&... args)
+        {
+            std::vector<std::any> vargs = { args... };
+
+            return Promise(
+                ioExecutor,
+                [ioExecutor, task, vargs](VariadicFunction resolve, VariadicFunction reject) {
+                    Repeat_(ioExecutor, MakeAnyFunc(task), vargs, resolve, reject);
+                },
+                Promise::Async
+            );
+        }
+
+        template<typename F, typename... Args>
+        static Promise Repeat(boost::asio::io_context& ioContext, F task, Args&&... args)
+        {
+            return Repeat(ioContext.get_executor(), task, std::forward<Args>(args)...);
+        }
+
     private:
 
         struct Impl : public std::enable_shared_from_this<Impl> {
@@ -174,8 +194,8 @@ namespace Sari { namespace Utils {
             std::shared_ptr<Impl> parent_;
             State state_ = State::Pending;
             std::vector<std::any> result_;
-            std::list<Utils::AnyFunction> resolveHandlers_;
-            std::unordered_map<std::type_index, Utils::AnyFunction> failHandlers_;
+            std::list<AnyFunction> resolveHandlers_;
+            std::unordered_map<std::type_index, AnyFunction> failHandlers_;
             std::list<FinalizeHandler> finalizeHandlers_;
 
             Impl(boost::asio::any_io_executor ioExecutor) :
@@ -205,7 +225,7 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor)
             {
-                Utils::VariadicFunction resolve{
+                VariadicFunction resolve{
                     [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->resolve(vargs);
@@ -214,7 +234,7 @@ namespace Sari { namespace Utils {
                     }
                 };
 
-                Utils::VariadicFunction reject{
+                VariadicFunction reject{
                     [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->reject(vargs);
@@ -228,14 +248,14 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor, AsyncAttr)
             {
-                Utils::VariadicFunction resolve{
+                VariadicFunction resolve{
                     [impl = shared_from_this()](const std::vector<std::any>& vargs) {
                         impl->resolve(vargs);
                         return std::any{};
                     }
                 };
 
-                Utils::VariadicFunction reject{
+                VariadicFunction reject{
                     [impl = shared_from_this()](const std::vector<std::any>& vargs) {
                         impl->reject(vargs);
                         return std::any{};
@@ -245,7 +265,7 @@ namespace Sari { namespace Utils {
                 callExecutor(executor, resolve, reject);
             }
 
-            void callExecutor(const Executor& executor, const Utils::VariadicFunction& resolve, const Utils::VariadicFunction& reject)
+            void callExecutor(const Executor& executor, const VariadicFunction& resolve, const VariadicFunction& reject)
             {
                 try {
                     executor(resolve, reject);
@@ -276,7 +296,7 @@ namespace Sari { namespace Utils {
                 }
 
                 // Get the next resolve handler from the queue.
-                Utils::AnyFunction resolveHandler = resolveHandlers_.front();
+                AnyFunction resolveHandler = resolveHandlers_.front();
                 resolveHandlers_.pop_front();
 
                 std::any result;
@@ -326,9 +346,9 @@ namespace Sari { namespace Utils {
                     promise.impl_->parent_ = shared_from_this();
 
                     promise.impl_->finalizeHandlers_.push_back(
-                        [parent = promise.impl_->parent_](Promise me) {
-                            if (me.state() == State::Fulfilled) {
-                                parent->resolve(me.result());
+                        [parent = promise.impl_->parent_](Promise promise) {
+                            if (promise.state() == State::Fulfilled) {
+                                parent->resolve(promise.result());
                             }
                         }
                     );
@@ -437,6 +457,60 @@ namespace Sari { namespace Utils {
         Promise(std::shared_ptr<Impl> impl) :
             impl_(impl)
         {}
+
+        static void Repeat_(
+            boost::asio::any_io_executor ioExecutor,
+            AnyFunction task, const std::vector<std::any>& vargs,
+            VariadicFunction resolve, VariadicFunction reject
+        )
+        {
+            std::any result = task(vargs);
+            Promise promise;
+    
+            if (result.has_value()) {
+                if (result.type() == typeid(Promise)) {
+                    promise = std::any_cast<Promise>(result);
+                }
+                else {
+                    promise = Promise::Resolve(ioExecutor, result);
+                }
+            }
+            else {
+                promise = Promise::Resolve(ioExecutor);
+            }
+
+            promise.finalize([ioExecutor, task, resolve, reject](Promise promise) {
+
+                if (promise.state() == Promise::State::Rejected) {
+                    reject(promise.result());
+                    return;
+                }
+            
+                bool cond = false;
+                std::vector<std::any> result = promise.result();
+
+                if (result.size() > 0) {
+
+                    if (result[0].type() == typeid(bool)) {
+                        cond = std::any_cast<bool>(result[0]);
+                        result.erase(result.begin());
+                    }
+                    else if (result[0].type() == typeid(int)) {
+                        cond = std::any_cast<int>(result[0]) != 0;
+                        result.erase(result.begin());
+                    }
+
+                }
+
+                if (cond) {
+                    Repeat_(ioExecutor, task, result, resolve, reject);
+                }
+                else {
+                    resolve(result);
+                }
+
+            }); 
+        }
 
     };
 
