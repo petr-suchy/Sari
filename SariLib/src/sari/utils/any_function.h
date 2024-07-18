@@ -85,6 +85,9 @@ namespace Sari { namespace Utils {
 	class VariadicFunction {
 	public:
 
+		VariadicFunction()
+		{}
+
 		VariadicFunction(const AnyFunction& func) :
 			func_(func)
 		{}

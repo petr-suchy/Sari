@@ -59,7 +59,7 @@ namespace Sari { namespace Utils {
             return impl_ == nullptr;
         }
 
-        boost::asio::any_io_executor getExecutor()
+        boost::asio::any_io_executor getExecutor() const
         {
             return impl_->ioExecutor_;
         }
@@ -94,7 +94,7 @@ namespace Sari { namespace Utils {
         }
 
         template<typename Handler>
-        Promise& fail(Handler failHandler)
+        Promise& fail(Handler failHandler) 
         {
             using FuncSign = FunctionSignature<decltype(std::function{failHandler})> ;
 
@@ -112,7 +112,7 @@ namespace Sari { namespace Utils {
             return *this;
         }
 
-        Promise finalize(FinalizeHandler finalizeHandler)
+        Promise finalize(FinalizeHandler finalizeHandler) const
         {
             switch (state()) {
                 case State::Fulfilled:
@@ -184,6 +184,55 @@ namespace Sari { namespace Utils {
         static Promise Repeat(boost::asio::io_context& ioContext, F task, Args&&... args)
         {
             return Repeat(ioContext.get_executor(), task, std::forward<Args>(args)...);
+        }
+
+        static Promise All(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
+        {
+            if (promises.empty()) {
+                return Promise::Resolve(ioExecutor);
+            }
+
+            auto group = std::make_shared<Group>();
+
+            group->counter = promises.size();
+
+            Promise resultingPromise = Promise(
+                ioExecutor,
+                [group](VariadicFunction resolve, VariadicFunction reject) {
+                    group->resolve = resolve;
+                    group->reject = reject;
+                },
+                Async
+            );
+
+            for (auto& promise : promises) {
+                promise.finalize([group](Promise promise) {
+
+                    if (promise.state() == State::Fulfilled) {
+                        // Append the result of the promise to the result of the group.
+                        group->result.insert(
+                            group->result.end(),
+                            promise.result().begin(), promise.result().end()
+                        );
+
+                        if (--group->counter == 0) {
+                            // All promises fulfilled.
+                            group->resolve(group->result);
+                        }
+                    }
+                    else { // Rejected
+                        group->reject(promise.result());
+                    }
+
+                });
+            }
+
+            return resultingPromise;
+        }
+
+        static Promise All(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
+        {
+            return All(ioContext.get_executor(), promises);
         }
 
     private:
@@ -453,6 +502,13 @@ namespace Sari { namespace Utils {
         };
 
         std::shared_ptr<Impl> impl_;
+
+        struct Group {
+            std::size_t counter = 0;
+            std::vector<std::any> result;
+            VariadicFunction resolve;
+            VariadicFunction reject;
+        };
 
         Promise(std::shared_ptr<Impl> impl) :
             impl_(impl)

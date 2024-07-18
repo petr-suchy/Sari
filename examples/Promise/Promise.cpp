@@ -29,49 +29,53 @@ int main()
 
     // Example #1:
 
-    Utils::Promise promise = Utils::Promise(
-        ioContext,
-        [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
-            // Asynchronous operation
-            bool success = true;
+    {
 
-            if (success) {
-                resolve(std::string{"Operation was successful!"});
-            }
-            else {
-                reject(std::string{"Operation failed."});
-            }
-        }
-    );
-
-    promise.then([&](std::string value) {
-        std::cout << value << '\n'; // "Operation was successful!"
-        return Utils::Promise(
+        Utils::Promise promise = Utils::Promise(
             ioContext,
             [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
-                resolve(std::string{"Next step success!"});
+                // Asynchronous operation
+                bool success = true;
+
+                if (success) {
+                    resolve(std::string{"Operation was successful!"});
+                }
+                else {
+                    reject(std::string{"Operation failed."});
+                }
             }
         );
-    }).then([](std::string value) {
-        std::cout << value << '\n'; // "Next step success!"
-    })
-    .fail([](std::string error) {
-        std::cerr << error << '\n'; // "Operation failed."
-    });
+
+        promise.then([&](std::string value) {
+            std::cout << value << '\n'; // "Operation was successful!"
+            return Utils::Promise(
+                ioContext,
+                [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+                    resolve(std::string{"Next step success!"});
+                }
+            );
+        }).then([](std::string value) {
+            std::cout << value << '\n'; // "Next step success!"
+        })
+        .fail([](std::string error) {
+            std::cerr << error << '\n'; // "Operation failed."
+        });
+
+    }
 
     // Example #2:
 
     {
 
-    auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(3));
+        auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(3));
 
-    AsyncWait(*timer)
-        .then([timer]() {
-            std::cout << "Time elapsed!\n";
-        })
-        .fail([](const boost::system::error_code& ec) {
-            std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
-        });
+        AsyncWait(*timer)
+            .then([timer]() {
+                std::cout << "Time elapsed!\n";
+            })
+            .fail([](const boost::system::error_code& ec) {
+                std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
+            });
 
     }
 
@@ -111,6 +115,29 @@ int main()
             }).fail([](const boost::system::error_code& ec) {
                 std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
             });
+    }
+
+    // Example #4:
+
+    {
+        Utils::Promise p1 = Utils::Promise::Resolve(ioContext, 10);
+        Utils::Promise p2 = Utils::Promise::Resolve(ioContext, 20);
+
+        try {
+
+            Utils::Promise::All(ioContext, { p1, p2 })
+                .then([](int x, int y) {
+                    std::cout << "Done with x = " << x << ", y = " << y << '\n';
+                }).fail([](int e) {
+                    std::cout << "Failed with " << e << ".";
+                }).fail([]() {
+                    std::cerr << "Failed!.";
+                });
+
+        }
+        catch (const std::exception& e) {
+            std::cerr << "error: " << e.what() << '\n';
+        }
     }
 
     ioContext.run();
