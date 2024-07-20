@@ -11,7 +11,7 @@ int main()
     {
         auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(3));
 
-        Asio::Deadline(Sari::Asio::AsyncWait(*timer), boost::asio::chrono::seconds(1))
+        Asio::AsyncDeadline(Sari::Asio::AsyncWait(*timer), boost::asio::chrono::seconds(1))
             .then([timer]() {
                 std::cout << "Done!\n";
             }).fail([](const boost::system::error_code& ec) {

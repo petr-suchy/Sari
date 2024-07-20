@@ -148,7 +148,7 @@ namespace Sari { namespace Asio {
      * with a boost::system::errc::timed_out error.
      */
     template<typename Duration>
-    Utils::Promise Deadline(Utils::Promise promise, Duration duration)
+    Utils::Promise AsyncDeadline(Utils::Promise promise, Duration duration)
     {
         auto deadlineTimer = std::make_shared<boost::asio::steady_timer>(promise.getExecutor(), duration);
 
