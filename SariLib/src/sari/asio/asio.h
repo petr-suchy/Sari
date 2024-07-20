@@ -134,4 +134,37 @@ namespace Sari { namespace Asio {
 		);
 	}
 
+    /**
+     * Adds a timeout constraint to a Utils::Promise.
+     *
+     * @tparam Duration The type of duration (e.g., boost::asio::chrono::seconds).
+     * @param promise The promise to which the timeout will be applied.
+     * @param duration The timeout duration.
+     * @return A new promise that resolves when either the original promise completes
+     *         or the timeout duration elapses, whichever comes first.
+     *
+     * If the original promise is finalized, the associated timer is canceled. If the
+     * timeout elapses before the promise completes, the resulting promise is rejected
+     * with a boost::system::errc::timed_out error.
+     */
+    template<typename Duration>
+    Utils::Promise Deadline(Utils::Promise promise, Duration duration)
+    {
+        auto deadlineTimer = std::make_shared<boost::asio::steady_timer>(promise.getExecutor(), duration);
+
+        promise.finalize([deadlineTimer](Utils::Promise promise){
+            deadlineTimer->cancel();
+        });
+
+        Utils::Promise deadline = AsyncWait(*deadlineTimer)
+            .then([ioExecutor = promise.getExecutor(), deadlineTimer]() {
+                return Utils::Promise::Reject(ioExecutor, make_error_code(boost::system::errc::timed_out));
+            });
+
+        return Utils::Promise::Race(
+            promise.getExecutor(),
+            { promise, deadline }
+        );
+    }
+
 }}

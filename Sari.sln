@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socks5Server", "examples\So
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "String", "examples\String\String.vcxproj", "{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Asio", "examples\Asio\Asio.vcxproj", "{0B22B685-377D-4702-9752-A30D35E74F9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -63,6 +65,14 @@ Global
 		{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E}.Release|x64.Build.0 = Release|x64
 		{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E}.Release|x86.ActiveCfg = Release|Win32
 		{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E}.Release|x86.Build.0 = Release|Win32
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Debug|x64.ActiveCfg = Debug|x64
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Debug|x64.Build.0 = Debug|x64
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Debug|x86.ActiveCfg = Debug|Win32
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Debug|x86.Build.0 = Debug|Win32
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Release|x64.ActiveCfg = Release|x64
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Release|x64.Build.0 = Release|x64
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Release|x86.ActiveCfg = Release|Win32
+		{0B22B685-377D-4702-9752-A30D35E74F9F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +82,7 @@ Global
 		{97DD0E36-059F-42BC-A344-DA61E758A6FE} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{4E96118B-DC69-4C83-8772-6D75CF4775A1} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
+		{0B22B685-377D-4702-9752-A30D35E74F9F} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0EC27A05-5F1E-411C-B7E6-AFAB68C905CF}
