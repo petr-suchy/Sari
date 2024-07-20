@@ -6,13 +6,17 @@
 template<typename Stream>
 Sari::Utils::Promise Socks5Server(Stream&& sock)
 {
+    namespace Asio = Sari::Asio;
     namespace Socks5 = Sari::Socks5;
     using Sari::Utils::Promise;
 
     auto iSock = std::make_shared<boost::asio::ip::tcp::socket>(std::move(sock));
     auto oSock = std::make_shared<boost::asio::ip::tcp::socket>(iSock->get_executor());
     
-    return Socks5::AsyncRecvMethodRequest(*iSock)
+    return Promise::Resolve(iSock->get_executor())
+        .then([iSock]() {
+            return Asio::AsyncDeadline(Socks5::AsyncRecvMethodRequest(*iSock), boost::asio::chrono::seconds(15));
+        })
         .then([iSock](Socks5::MethodRequest methReq) {
 
             Socks5::Method method = Socks5::Method::NoAuthRequired;
@@ -34,7 +38,10 @@ Sari::Utils::Promise Socks5Server(Stream&& sock)
                             iSock->get_executor(), make_error_code(Socks5Errc::NoAcceptableMethods)
                         );
                     }
-                    return Socks5::AsyncRecvCommandRequest(*iSock);
+                    return Asio::AsyncDeadline(
+                        Socks5::AsyncRecvCommandRequest(*iSock),
+                        boost::asio::chrono::seconds(15)
+                    );
                 });
 
         }).then([iSock, oSock](Socks5::CommandRequest cmdReq){
