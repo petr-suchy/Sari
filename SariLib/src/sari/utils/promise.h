@@ -26,6 +26,8 @@ namespace Sari { namespace Utils {
 
         using FinalizeHandler = std::function<void(Promise)>;
 
+        // Constructors.
+
         Promise() :
             impl_(nullptr)
         {}
@@ -54,26 +56,32 @@ namespace Sari { namespace Utils {
             impl_->launchExecutor(executor, Async);
         }
 
+        // It returns true if the Promise object is null.
         bool isNull() const
         {
             return impl_ == nullptr;
         }
 
+        // It returns the execution context.
         boost::asio::any_io_executor getExecutor() const
         {
             return impl_->ioExecutor_;
         }
 
+        // It returns the current state of the Promise object.
         State state() const
         {
             return impl_->state();
         }
 
+        // It returns a result of the Promise object.
         const std::vector<std::any>& result() const
         {
             return impl_->result_;
         }
 
+        // It schedules a function to be called when the promise is fulfilled.
+        // It returns Promise object itself, allowing you to chain calls to other promise methods.
         template<typename Handler>
         Promise& then(Handler resolveHandler)
         {
@@ -93,6 +101,8 @@ namespace Sari { namespace Utils {
             return *this;
         }
 
+        // It schedules a function to be called when the promise is rejected.
+        // It returns Promise object itself, allowing you to chain calls to other promise methods.
         template<typename Handler>
         Promise& fail(Handler failHandler) 
         {
@@ -112,6 +122,8 @@ namespace Sari { namespace Utils {
             return *this;
         }
 
+        // It schedules a function to be called when the promise is settled (either fulfilled or rejected).
+        // It returns Promise object itself, allowing you to chain calls to other promise methods.
         Promise finalize(FinalizeHandler finalizeHandler) const
         {
             switch (state()) {
