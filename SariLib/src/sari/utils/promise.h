@@ -128,6 +128,7 @@ namespace Sari { namespace Utils {
             return *this;
         }
 
+        // It takes one or more values and returns a promise that will be fulfilled with that values(s).
         template<typename... Args>
         static Promise Resolve(boost::asio::any_io_executor ioExecutor, Args&&... args)
         {
@@ -141,12 +142,14 @@ namespace Sari { namespace Utils {
             );
         }
 
+        // It takes one or more values and returns a promise that will be fulfilled with that values(s).
         template<typename... Args>
         static Promise Resolve(boost::asio::io_context& ioContext, Args&&... args)
         {
             return Resolve(ioContext.get_executor(), std::forward<Args>(args)...);
         }
 
+        // It takes one or more values and returns a promise that will be rejected with that values(s).
         template<typename... Args>
         static Promise Reject(boost::asio::any_io_executor ioExecutor, Args&&... args)
         {
@@ -160,6 +163,7 @@ namespace Sari { namespace Utils {
             );
         }
 
+        // It takes one or more values and returns a promise that will be rejected with that values(s).
         template<typename... Args>
         static Promise Reject(boost::asio::io_context& ioContext, Args&&... args)
         {
@@ -186,15 +190,16 @@ namespace Sari { namespace Utils {
             return Repeat(ioContext.get_executor(), task, std::forward<Args>(args)...);
         }
 
+        // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
+        // when all of the input's promises fulfill (including when an empty iterable is passed), with an array
+        // of the fulfillment values. It rejects when any of the input's promises rejects, with this first rejection reason.
         static Promise All(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
         {
             if (promises.empty()) {
                 return Promise::Resolve(ioExecutor);
             }
 
-            auto group = std::make_shared<Group>();
-
-            group->counter = promises.size();
+            auto group = std::make_shared<Group>(promises.size());
 
             Promise resultingPromise = Promise(
                 ioExecutor,
@@ -230,6 +235,9 @@ namespace Sari { namespace Utils {
             return resultingPromise;
         }
 
+        // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
+        // when all of the input's promises fulfill (including when an empty iterable is passed), with an array
+        // of the fulfillment values. It rejects when any of the input's promises rejects, with this first rejection reason.
         static Promise All(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
         {
             return All(ioContext.get_executor(), promises);
@@ -504,10 +512,16 @@ namespace Sari { namespace Utils {
         std::shared_ptr<Impl> impl_;
 
         struct Group {
+
             std::size_t counter = 0;
             std::vector<std::any> result;
             VariadicFunction resolve;
             VariadicFunction reject;
+
+            Group(std::size_t size) :
+                counter(size)
+            {}
+
         };
 
         Promise(std::shared_ptr<Impl> impl) :
