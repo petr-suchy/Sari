@@ -191,8 +191,8 @@ namespace Sari { namespace Utils {
         }
 
         // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
-        // when all of the input's promises fulfill (including when an empty iterable is passed), with an array
-        // of the fulfillment values. It rejects when any of the input's promises rejects, with this first rejection reason.
+        // when all of the input's promises fulfill (including when an empty vector is passed), with fulfillment values.
+        // It rejects when any of the input's promises rejects, with this first rejection reason.
         static Promise All(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
         {
             if (promises.empty()) {
@@ -236,11 +236,106 @@ namespace Sari { namespace Utils {
         }
 
         // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
-        // when all of the input's promises fulfill (including when an empty iterable is passed), with an array
-        // of the fulfillment values. It rejects when any of the input's promises rejects, with this first rejection reason.
+        // when all of the input's promises fulfill (including when an empty vector is passed), with  fulfillment values.
+        // It rejects when any of the input's promises rejects, with this first rejection reason.
         static Promise All(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
         {
             return All(ioContext.get_executor(), promises);
+        }
+
+        // It takes a vector of promises as input and returns a single Promise.
+        // This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment
+        // value. It rejects when all of the input's promises reject (including when an empty vector is passed),
+        // with rejection reasons.
+        static Promise Any(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
+        {
+                if (promises.empty()) {
+                    return Promise::Reject(ioExecutor);
+                }
+
+                auto group = std::make_shared<Group>(promises.size());
+
+                Promise resultingPromise = Promise(
+                    ioExecutor,
+                    [group](VariadicFunction resolve, VariadicFunction reject) {
+                        group->resolve = resolve;
+                        group->reject = reject;
+                    },
+                    Async
+                );
+
+                for (auto& promise : promises) {
+                    promise.finalize([group](Promise promise) {
+
+                        if (promise.state() == State::Rejected) {
+                            // Append the result of the promise to the result of the group.
+                            group->result.insert(
+                                group->result.end(),
+                                promise.result().begin(), promise.result().end()
+                            );
+
+                            if (--group->counter == 0) {
+                                // All promises rejected.
+                                group->reject(group->result);
+                            }
+                        }
+                        else { // Fulfilled
+                            group->resolve(promise.result());
+                        }
+
+                    });
+                }
+
+                return resultingPromise;
+        }
+
+        // It takes a vector of promises as input and returns a single Promise.
+        // This returned promise fulfills when any of the input's promises fulfills, with this first fulfillment
+        // value. It rejects when all of the input's promises reject (including when an empty vector is passed),
+        // with rejection reasons.
+        static Promise Any(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
+        {
+            return Any(ioContext.get_executor(), promises);
+        }
+
+        // It takes an vector of promises as input and returns a single Promise. This returned promise settles
+        // (is either fulfilled or rejected), with the eventual state of the first promise that settles.
+        // The returned promise remains pending forever if the passed vector is empty. 
+        static Promise Race(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
+        {
+                auto group = std::make_shared<Group>(promises.size());
+
+                Promise resultingPromise = Promise(
+                    ioExecutor,
+                    [group](VariadicFunction resolve, VariadicFunction reject) {
+                        group->resolve = resolve;
+                        group->reject = reject;
+                    },
+                    Async
+                );
+
+                for (auto& promise : promises) {
+                    promise.finalize([group](Promise promise) {
+
+                        if (promise.state() == State::Fulfilled) {
+                            group->resolve(promise.result());
+                        }
+                        else { // Rejected
+                            group->reject(promise.result());
+                        }
+
+                    });
+                }
+
+                return resultingPromise;
+        }
+
+        // It takes an vector of promises as input and returns a single Promise. This returned promise settles
+        // (is either fulfilled or rejected), with the eventual state of the first promise that settles.
+        // The returned promise remains pending forever if the passed vector is empty. 
+        static Promise Race(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
+        {
+            return Race(ioContext.get_executor(), promises);
         }
 
     private:
@@ -462,7 +557,7 @@ namespace Sari { namespace Utils {
                         else {
                             result = failHandler(vargs);
                         }
-
+                        
                         if (result.has_value()) {
                             state(State::Fulfilled, std::vector<std::any>{ result });
                         }

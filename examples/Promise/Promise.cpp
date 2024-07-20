@@ -59,6 +59,8 @@ int main()
         })
         .fail([](std::string error) {
             std::cerr << error << '\n'; // "Operation failed."
+        }).fail([]() {
+            std::cerr << "Failed!\n";
         });
 
     }
@@ -129,7 +131,53 @@ int main()
                 .then([](int x, int y) {
                     std::cout << "Done with x = " << x << ", y = " << y << '\n';
                 }).fail([](int e) {
-                    std::cout << "Failed with " << e << ".";
+                    std::cerr << "Failed with " << e << ".\n";
+                }).fail([]() {
+                    std::cerr << "Failed!.";
+                });
+
+        }
+        catch (const std::exception& e) {
+            std::cerr << "error: " << e.what() << '\n';
+        }
+    }
+
+    // Example #5:
+
+    {
+        Utils::Promise p1 = Utils::Promise::Reject(ioContext, 10);
+        Utils::Promise p2 = Utils::Promise::Resolve(ioContext, 20);
+
+        try {
+
+            Utils::Promise::Any(ioContext, { p1, p2 })
+                .then([](int x) {
+                    std::cout << "Done with " << x << ".\n";
+                }).fail([](int x, int y) {
+                    std::cerr << "Failed with x = " << x << ", y = " << y << '\n';
+                }).fail([]() {
+                    std::cerr << "Failed!.";
+                });
+
+        }
+        catch (const std::exception& e) {
+            std::cerr << "error: " << e.what() << '\n';
+        }
+    }
+
+    // Example #6:
+
+    {
+        Utils::Promise p1 = Utils::Promise::Reject(ioContext, 10);
+        Utils::Promise p2 = Utils::Promise::Resolve(ioContext, 20);
+
+        try {
+
+            Utils::Promise::Race(ioContext, { p1, p2 })
+                .then([](int x) {
+                    std::cout << "Done with " << x << ".\n";
+                }).fail([](int x) {
+                    std::cerr << "Failed with " << x << ".\n";
                 }).fail([]() {
                     std::cerr << "Failed!.";
                 });
