@@ -5,7 +5,7 @@
 
 namespace Sari { namespace Utils {
 
-    class Trader {
+    class Exchanger {
     public:
 
         struct ExchangeHandler {
@@ -30,7 +30,7 @@ namespace Sari { namespace Utils {
         using ExchangeHandlerList = DLinkedList<std::unique_ptr<ExchangeHandler>>;
 
         class Transaction {
-        friend class Trader;
+        friend class Exchanger;
         public:
 
             boost::asio::any_io_executor getExecutor() const { return ioExecutor_; }
@@ -49,17 +49,17 @@ namespace Sari { namespace Utils {
         };
 
         template<typename... Args>
-        Sari::Utils::Promise asyncBuy(Transaction& trans, Args&&... args)
+        Sari::Utils::Promise asyncConsume(Transaction& trans, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
-            return exchange(trans, vargs, buyHandlers_, sellHandlers_);
+            return exchange(trans, vargs, consumeHandlers_, produceHandlers_);
         }
 
         template<typename... Args>
-        Sari::Utils::Promise asyncSell(Transaction& trans, Args&&... args)
+        Sari::Utils::Promise asyncPrtoduce(Transaction& trans, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
-            return exchange(trans, vargs, sellHandlers_, buyHandlers_);
+            return exchange(trans, vargs, produceHandlers_, consumeHandlers_);
         }
 
         static Transaction CreateTransaction(boost::asio::any_io_executor ioExecutor)
@@ -74,8 +74,8 @@ namespace Sari { namespace Utils {
 
     private:
 
-        ExchangeHandlerList buyHandlers_;
-        ExchangeHandlerList sellHandlers_;
+        ExchangeHandlerList consumeHandlers_;
+        ExchangeHandlerList produceHandlers_;
 
         Sari::Utils::Promise exchange(
             Transaction& trans, const std::vector<std::any>& vargs,

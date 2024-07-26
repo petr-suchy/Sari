@@ -119,7 +119,7 @@
     <ClInclude Include="src\sari\utils\dlinked_list.h">
       <Filter>src\sari\utils</Filter>
     </ClInclude>
-    <ClInclude Include="src\sari\utils\trader.h">
+    <ClInclude Include="src\sari\utils\exchanger.h">
       <Filter>src\sari\utils</Filter>
     </ClInclude>
   </ItemGroup>

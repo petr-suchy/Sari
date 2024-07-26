@@ -179,9 +179,9 @@
     <ClInclude Include="src\sari\string\trim.h" />
     <ClInclude Include="src\sari\utils\any_function.h" />
     <ClInclude Include="src\sari\utils\dlinked_list.h" />
+    <ClInclude Include="src\sari\utils\exchanger.h" />
     <ClInclude Include="src\sari\utils\function_signature.h" />
     <ClInclude Include="src\sari\utils\promise.h" />
-    <ClInclude Include="src\sari\utils\trader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
