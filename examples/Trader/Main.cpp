@@ -15,8 +15,13 @@ int main()
     Sari::Utils::Promise selling = exchanger.asyncPrtoduce(trans1, goods)
         .then([goods](int price) {
             std::cout << "Alice sold " << goods << " for " << price << "$.\n";
-        }).fail([]() {
-            std::cerr << "Selling failed!\n";
+        }).fail([](boost::system::error_code ec) {
+            if (ec == make_error_code(boost::system::errc::operation_canceled)) {
+                std::cerr << "Selling canceled!\n";
+            }
+            else {
+                std::cerr << "Selling failed!\n";
+            }
         });
 
     int price = 10;
@@ -26,8 +31,13 @@ int main()
     Sari::Utils::Promise buying = exchanger.asyncConsume(trans2, price)
         .then([price](int goods) {
             std::cout << "Bob bought " << goods << " for " << price << "$.\n";
-        }).fail([]() {
-            std::cerr << "Buying failed!\n";
+        }).fail([](boost::system::error_code ec) {
+            if (ec == make_error_code(boost::system::errc::operation_canceled)) {
+                std::cerr << "Buying canceled!\n";
+            }
+            else {
+                std::cerr << "Buying failed!\n";
+            }
         });
 
     Sari::Utils::Promise::All(ioContext, { selling, buying })

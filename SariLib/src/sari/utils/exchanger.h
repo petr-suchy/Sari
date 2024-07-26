@@ -22,7 +22,7 @@ namespace Sari { namespace Utils {
 
             ~ExchangeHandler()
             {
-                reject_();
+                reject_(make_error_code(boost::system::errc::operation_canceled));
             }
 
         };
