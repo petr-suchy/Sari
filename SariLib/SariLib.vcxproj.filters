@@ -116,5 +116,8 @@
     <ClInclude Include="src\sari\string\trim.h">
       <Filter>src\sari\string</Filter>
     </ClInclude>
+    <ClInclude Include="src\sari\utils\dlinked_list.h">
+      <Filter>src\sari\utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

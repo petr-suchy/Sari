@@ -178,6 +178,7 @@
     <ClInclude Include="src\sari\string\split_by_blank.h" />
     <ClInclude Include="src\sari\string\trim.h" />
     <ClInclude Include="src\sari\utils\any_function.h" />
+    <ClInclude Include="src\sari\utils\dlinked_list.h" />
     <ClInclude Include="src\sari\utils\function_signature.h" />
     <ClInclude Include="src\sari\utils\promise.h" />
   </ItemGroup>
