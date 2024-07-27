@@ -1,10 +1,12 @@
 #include <iostream>
 #include "sari/net/server.h"
-#include "sari/asio/asio.h"
+#include "Proxy.h"
 
+namespace asio = boost::asio;
 namespace Net = Sari::Net;
 namespace Asio = Sari::Asio;
 namespace Utils = Sari::Utils;
+namespace String = Sari::String;
 
 int main(int argc, char* argv[])
 {
@@ -21,10 +23,14 @@ int main(int argc, char* argv[])
                     return;
                 }
 
-                std::cout << "Connection established!\n";
-
-                peer.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-                peer.close();
+                StartProxy(std::move(peer))
+                    .fail([](const boost::system::error_code ec) {
+                        std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
+                    }).fail([](const std::exception e) {
+                        std::cerr << "error: " << e.what() << '\n';
+                    }).fail([]() {
+                        std::cerr << "an unknown error occurred\n";
+                    });
             }
         );
 
