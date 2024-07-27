@@ -77,6 +77,28 @@ namespace Sari { namespace Asio {
 		);
 	}
 
+	template<typename AsyncReadStream, typename Allocator>
+	Utils::Promise AsyncReadUntil(
+		AsyncReadStream& stream,
+		boost::asio::basic_streambuf<Allocator>& streamBuf,
+		const std::string& delim
+	){
+		return Utils::Promise(
+			stream.get_executor(),
+			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+				boost::asio::async_read_until(stream, streamBuf, delim, [=](const boost::system::error_code& ec, std::size_t bytesTransferred) {
+					if (ec) {
+						reject(ec);
+					}
+					else {
+						resolve(bytesTransferred);
+					}
+				});
+			},
+			Utils::Promise::Async
+		);
+	}
+
 	template<typename Resolver, typename Query>
 	Utils::Promise AsyncResolve(Resolver& resolver, Query& query)
 	{
