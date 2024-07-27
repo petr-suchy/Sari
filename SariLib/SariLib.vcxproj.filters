@@ -34,6 +34,9 @@
     <Filter Include="src\sari\string">
       <UniqueIdentifier>{9a2596f3-ad00-4bbe-bbf6-5b34027b6d3d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\sari\net">
+      <UniqueIdentifier>{c340f775-8e14-4f9c-b9fd-2a0f6c5f31c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SariLib.cpp">
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="src\sari\utils\exchanger.h">
       <Filter>src\sari\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sari\net\server.h">
+      <Filter>src\sari\net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

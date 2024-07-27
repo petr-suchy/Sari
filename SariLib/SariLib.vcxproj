@@ -161,6 +161,7 @@
     <ClInclude Include="FunctionSignature.h" />
     <ClInclude Include="Promise.h" />
     <ClInclude Include="src\sari\asio\asio.h" />
+    <ClInclude Include="src\sari\net\server.h" />
     <ClInclude Include="src\sari\socks5\addr.h" />
     <ClInclude Include="src\sari\socks5\cmd_reply.h" />
     <ClInclude Include="src\sari\socks5\cmd_req.h" />
