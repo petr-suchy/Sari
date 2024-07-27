@@ -24,6 +24,8 @@ int main()
             }
         });
 
+        
+
     int price = 10;
 
     Sari::Utils::Exchanger::Transaction trans2 = Sari::Utils::Exchanger::CreateTransaction(ioContext);

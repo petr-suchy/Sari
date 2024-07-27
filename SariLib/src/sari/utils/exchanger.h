@@ -40,7 +40,7 @@ namespace Sari { namespace Utils {
         private:
 
             boost::asio::any_io_executor ioExecutor_;
-            std::shared_ptr<typename ExchangeHandlerList::Element> handlerElement_;
+            std::unique_ptr<typename ExchangeHandlerList::Element> handlerElement_;
 
             Transaction(boost::asio::any_io_executor ioExecutor) :
                 ioExecutor_(ioExecutor)
@@ -96,7 +96,7 @@ namespace Sari { namespace Utils {
                     else {
                         auto exchangeHandler = std::make_unique<ExchangeHandler>(resolve, reject, vargs);
                         typename ExchangeHandlerList::Element* newHandlerElement = new typename ExchangeHandlerList::Element(std::move(exchangeHandler));
-                        trans.handlerElement_ = std::shared_ptr<typename ExchangeHandlerList::Element>(newHandlerElement);
+                        trans.handlerElement_.reset(newHandlerElement);
                         handlers.append(newHandlerElement);
                     }
 			    }
