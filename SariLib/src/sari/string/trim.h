@@ -1,5 +1,7 @@
 #pragma once
 
+#include "range.h"
+
 namespace Sari { namespace String {
 
 	template<typename T>
