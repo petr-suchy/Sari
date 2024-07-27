@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Asio", "examples\Asio\Asio.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Trader", "examples\Trader\Trader.vcxproj", "{EA19BD33-FE82-4FA7-8B4B-983B87B69C72}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Proxy", "examples\Proxy\Proxy.vcxproj", "{18F3D4EC-4441-4803-8368-E13273B21FFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,6 +85,14 @@ Global
 		{EA19BD33-FE82-4FA7-8B4B-983B87B69C72}.Release|x64.Build.0 = Release|x64
 		{EA19BD33-FE82-4FA7-8B4B-983B87B69C72}.Release|x86.ActiveCfg = Release|Win32
 		{EA19BD33-FE82-4FA7-8B4B-983B87B69C72}.Release|x86.Build.0 = Release|Win32
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Debug|x64.ActiveCfg = Debug|x64
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Debug|x64.Build.0 = Debug|x64
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Debug|x86.ActiveCfg = Debug|Win32
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Debug|x86.Build.0 = Debug|Win32
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Release|x64.ActiveCfg = Release|x64
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Release|x64.Build.0 = Release|x64
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Release|x86.ActiveCfg = Release|Win32
+		{18F3D4EC-4441-4803-8368-E13273B21FFD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +104,7 @@ Global
 		{3D6CDA2F-2B2C-4B1F-B8A9-CDF77731C87E} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{0B22B685-377D-4702-9752-A30D35E74F9F} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{EA19BD33-FE82-4FA7-8B4B-983B87B69C72} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
+		{18F3D4EC-4441-4803-8368-E13273B21FFD} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0EC27A05-5F1E-411C-B7E6-AFAB68C905CF}
