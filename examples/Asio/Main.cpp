@@ -9,11 +9,31 @@ int main()
     boost::asio::io_context ioContext;
 
     {
-        auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(3));
+        Utils::Promise::Resolve(ioContext)
+            .then([&]() {
 
-        Asio::AsyncDeadline(Sari::Asio::AsyncWait(*timer), boost::asio::chrono::seconds(1))
-            .then([timer]() {
-                std::cout << "Done!\n";
+                auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(1));
+
+                Utils::Promise operationInTime = Sari::Asio::AsyncWait(*timer);
+
+                return Asio::AsyncDeadline(operationInTime, boost::asio::chrono::seconds(2))
+                    .then([]() {
+                        std::cout << "The first operation is successfully done!\n";
+                    }).finalize([timer](Utils::Promise p) {
+                        timer->cancel();
+                    });
+            }).then([&]() {
+
+                auto timer = std::make_shared<boost::asio::steady_timer>(ioContext, boost::asio::chrono::seconds(2));
+
+                Utils::Promise lateOperation = Sari::Asio::AsyncWait(*timer);
+
+                return Asio::AsyncDeadline(lateOperation, boost::asio::chrono::seconds(1))
+                    .then([]() {
+                        std::cout << "The second operation should never be completed. :)\n";
+                    }).finalize([timer](Utils::Promise p) {
+                        timer->cancel();
+                    });
             }).fail([](const boost::system::error_code& ec) {
                 std::cerr << ec.category().name() << " error: " << ec.message() << '\n';
             }).fail([](){
