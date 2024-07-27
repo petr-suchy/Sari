@@ -188,6 +188,28 @@ int main()
         }
     }
 
+    // Example #7:
+
+    {
+        Utils::Promise::Try(ioContext, Utils::Promise::Resolve(ioContext, 10, 20))
+            .then([](Utils::Promise p) {
+                if (p.state() == Utils::Promise::State::Fulfilled) {
+
+                    int x = std::any_cast<int>(p.result()[0]);
+                    int y = std::any_cast<int>(p.result()[1]);
+
+                    return Utils::Promise::Resolve(p.getExecutor(), x, y);
+                }
+                else {
+                    return Utils::Promise::Reject(p.getExecutor(), p.result());
+                }
+            }).then([](int x, int y) {
+                std::cout << "x = " << x << ", y = " << y << '\n';
+            }).fail([](int ec) {
+                std::cerr << "Failed with " << ec << '\n';
+            });
+    }
+
     ioContext.run();
 
     return 0;
