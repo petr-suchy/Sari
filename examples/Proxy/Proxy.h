@@ -46,7 +46,7 @@ Sari::Utils::Promise StartProxy(Socket&& peer)
             );
 
             // Try to receive a command in the time limit.
-            return Utils::Promise::Try(sock->get_executor(), Asio::AsyncDeadline(readUntilCommand, boost::asio::chrono::seconds(15)))
+            return Utils::Promise::AllSettled(sock->get_executor(), { Asio::AsyncDeadline(readUntilCommand, boost::asio::chrono::seconds(15)) })
                 .then([sock](Utils::Promise p) {
                     if (p.state() == Utils::Promise::State::Fulfilled) {
                         return Utils::Promise::Resolve(p.getExecutor(), p.result());

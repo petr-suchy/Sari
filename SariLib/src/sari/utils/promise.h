@@ -393,25 +393,6 @@ namespace Sari { namespace Utils {
             return AllSettled(ioContext.get_executor(), promises);
         }
 
-        // Creates and returns a new Promise that is resolved with the final state of the provided promise.
-        static Promise Try(boost::asio::any_io_executor ioExecutor, Promise promise)
-        {
-            return Promise(
-                ioExecutor,
-                [promise](VariadicFunction resolve, VariadicFunction reject) {
-                    promise.finalize([=](Promise p) {
-                        resolve(p);
-                    });
-                }
-            );
-        }
-
-        // Creates and returns a new Promise that is resolved with the final state of the provided promise.
-        static Promise Try(boost::asio::io_context& ioContext, Promise promise)
-        {
-            return Try(ioContext.get_executor(), promise);
-        }
-
     private:
 
         struct Impl : public std::enable_shared_from_this<Impl> {
