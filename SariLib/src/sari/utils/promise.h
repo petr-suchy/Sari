@@ -56,28 +56,48 @@ namespace Sari { namespace Utils {
             impl_->launchExecutor(executor, Async);
         }
 
-        // It returns true if the Promise object is null.
+        // Returns true if the Promise object is null.
         bool isNull() const
         {
             return impl_ == nullptr;
         }
 
-        // It returns the execution context.
+        // Returns the execution context.
         boost::asio::any_io_executor getExecutor() const
         {
             return impl_->ioExecutor_;
         }
 
-        // It returns the current state of the Promise object.
+        // Returns the current state of the Promise object.
         State state() const
         {
             return impl_->state();
         }
 
-        // It returns a result of the Promise object.
+        // Returns a constant reference to the vector of results.
         const std::vector<std::any>& result() const
         {
             return impl_->result_;
+        }
+
+        // Returns the result at the specified index as std::any type.
+        // Throws std::out_of_range if the index is out of bounds.
+        std::any result(std::size_t index) const
+        {
+            if (index >= impl_->result_.size()) {
+                throw std::out_of_range("result index is out of range");
+            }
+
+            return impl_->result_[index];
+        }
+
+        // Returns the result at the specified index, cast to the specified type T.
+        // Throws std::out_of_range if the index is out of bounds.
+        // Throws std::bad_any_cast if the cast to T is not possible.
+        template<typename T>
+        T result(std::size_t index) const
+        {
+            return std::any_cast<T>(result(index));
         }
 
         // It schedules a function to be called when the promise is fulfilled.

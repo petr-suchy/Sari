@@ -210,6 +210,8 @@ int main()
             });
     } */
 
+    // Example #8:
+
     {
         Utils::Promise p1 = Utils::Promise::Resolve(ioContext, 10, std::string{ "Hello!" });
         Utils::Promise p2 = Utils::Promise::Reject(ioContext, 123);
@@ -220,17 +222,26 @@ int main()
                 std::cout << "Promise 1: state=" << static_cast<int>(p1.state()) << " ";
                 std::cout << "result=" << p1.result().size() << "\n";
 
-                int n = std::any_cast<int>(p1.result()[0]);
-                std::string str = std::any_cast<std::string>(p1.result()[1]);
+                if (p1.result(0).type() == typeid(int) && p1.result(1).type() == typeid(std::string)) {
 
-                std::cout << n << " " << str << "\n";
+                    int n = p1.result<int>(0);
+                    std::string str = p1.result<std::string>(1);
+
+                    std::cout << n << " " << str << "\n";
+                }
 
                 std::cout << "Promise 2: state=" << static_cast<int>(p2.state()) << " ";
                 std::cout << "result=" << p2.result().size() << "\n";
 
-                int ec = std::any_cast<int>(p2.result()[0]);
+                if (p2.result(0).type() == typeid(int)) {
+                    int ec = p2.result<int>(0);
+                    std::cout << ec << '\n';
+                }
 
-                std::cout << ec << '\n';
+            }).fail([](std::exception e) {
+                std::cerr << "error: " << e.what() << '\n';
+            }).fail([]() {
+                std::cerr << "Failed!\n";
             });
     }
 
