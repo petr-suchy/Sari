@@ -211,13 +211,26 @@ int main()
     } */
 
     {
-        Utils::Promise p1 = Utils::Promise::Resolve(ioContext);
-        Utils::Promise p2 = Utils::Promise::Reject(ioContext);
+        Utils::Promise p1 = Utils::Promise::Resolve(ioContext, 10, std::string{ "Hello!" });
+        Utils::Promise p2 = Utils::Promise::Reject(ioContext, 123);
 
         Utils::Promise::AllSettled(ioContext, { p1, p2 })
             .then([](Utils::Promise p1, Utils::Promise p2) {
-                std::cout << "Promise 1 state: " << static_cast<int>(p1.state()) << "\n";
-                std::cout << "Promise 2 state: " << static_cast<int>(p2.state()) << "\n";
+
+                std::cout << "Promise 1: state=" << static_cast<int>(p1.state()) << " ";
+                std::cout << "result=" << p1.result().size() << "\n";
+
+                int n = std::any_cast<int>(p1.result()[0]);
+                std::string str = std::any_cast<std::string>(p1.result()[1]);
+
+                std::cout << n << " " << str << "\n";
+
+                std::cout << "Promise 2: state=" << static_cast<int>(p2.state()) << " ";
+                std::cout << "result=" << p2.result().size() << "\n";
+
+                int ec = std::any_cast<int>(p2.result()[0]);
+
+                std::cout << ec << '\n';
             });
     }
 
