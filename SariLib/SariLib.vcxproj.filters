@@ -128,5 +128,8 @@
     <ClInclude Include="src\sari\net\server.h">
       <Filter>src\sari\net</Filter>
     </ClInclude>
+    <ClInclude Include="src\sari\stream\coupler.h">
+      <Filter>src\sari\stream</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
