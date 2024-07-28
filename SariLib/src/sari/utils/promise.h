@@ -310,7 +310,7 @@ namespace Sari { namespace Utils {
             return Any(ioContext.get_executor(), promises);
         }
 
-        // It takes an vector of promises as input and returns a single Promise. This returned promise settles
+        // It takes a vector of promises as input and returns a single Promise. This returned promise settles
         // (is either fulfilled or rejected), with the eventual state of the first promise that settles.
         // The returned promise remains pending forever if the passed vector is empty. 
         static Promise Race(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
@@ -342,12 +342,55 @@ namespace Sari { namespace Utils {
                 return resultingPromise;
         }
 
-        // It takes an vector of promises as input and returns a single Promise. This returned promise settles
+        // It takes a vector of promises as input and returns a single Promise. This returned promise settles
         // (is either fulfilled or rejected), with the eventual state of the first promise that settles.
         // The returned promise remains pending forever if the passed vector is empty. 
         static Promise Race(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
         {
             return Race(ioContext.get_executor(), promises);
+        }
+
+        // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
+        // when all of the input's promises settle (including when an empty vector is passed).
+        static Promise AllSettled(boost::asio::any_io_executor ioExecutor, const std::vector<Promise>& promises)
+        {
+            if (promises.empty()) {
+                return Promise::Resolve(ioExecutor);
+            }
+
+            auto group = std::make_shared<Group>(promises.size(), promises.size());
+
+            Promise resultingPromise = Promise(
+                ioExecutor,
+                [group](VariadicFunction resolve, VariadicFunction reject) {
+                    group->resolve = resolve;
+                    group->reject = reject;
+                },
+                Async
+            );
+
+            int index = 0;
+
+            for (auto& promise : promises) {
+                promise.finalize([index = index++, group](Promise promise) {
+
+                    group->result[index] = promise;
+
+                    if (--group->counter == 0) {
+                        // All promises settled.
+                        group->resolve(group->result);
+                    }
+                });
+            }
+
+            return resultingPromise;
+        }
+
+        // It takes a vector of promises as input and returns a single Promise. This returned promise fulfills
+        // when all of the input's promises settle (including when an empty vector is passed).
+        static Promise AllSettled(boost::asio::io_context& ioContext, const std::vector<Promise>& promises)
+        {
+            return AllSettled(ioContext.get_executor(), promises);
         }
 
         // Creates and returns a new Promise that is resolved with the final state of the provided promise.
@@ -639,13 +682,14 @@ namespace Sari { namespace Utils {
 
         struct Group {
 
-            std::size_t counter = 0;
+            std::size_t counter;
             std::vector<std::any> result;
             VariadicFunction resolve;
             VariadicFunction reject;
 
-            Group(std::size_t size) :
-                counter(size)
+            Group(std::size_t size, std::size_t resultSize = 0) :
+                counter(size),
+                result(resultSize)
             {}
 
         };

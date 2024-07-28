@@ -26,7 +26,7 @@ Utils::Promise AsyncWait(Object& object)
 int main()
 {
     asio::io_context ioContext;
-
+    /*
     // Example #1:
 
     {
@@ -207,6 +207,17 @@ int main()
                 std::cout << "x = " << x << ", y = " << y << '\n';
             }).fail([](int ec) {
                 std::cerr << "Failed with " << ec << '\n';
+            });
+    } */
+
+    {
+        Utils::Promise p1 = Utils::Promise::Resolve(ioContext);
+        Utils::Promise p2 = Utils::Promise::Reject(ioContext);
+
+        Utils::Promise::AllSettled(ioContext, { p1, p2 })
+            .then([](Utils::Promise p1, Utils::Promise p2) {
+                std::cout << "Promise 1 state: " << static_cast<int>(p1.state()) << "\n";
+                std::cout << "Promise 2 state: " << static_cast<int>(p2.state()) << "\n";
             });
     }
 
