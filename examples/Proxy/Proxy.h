@@ -45,8 +45,32 @@ Sari::Utils::Promise StartProxy(Socket&& peer)
                 readUntilCommandTask, streamBuf
             );
 
-            // Add the time limit for receiving the command.
-            return Asio::AsyncDeadline(readUntilCommand, boost::asio::chrono::seconds(15));
+            // Try to receive a command in the time limit.
+            return Utils::Promise::Try(sock->get_executor(), Asio::AsyncDeadline(readUntilCommand, boost::asio::chrono::seconds(15)))
+                .then([sock](Utils::Promise p) {
+                    if (p.state() == Utils::Promise::State::Fulfilled) {
+                        return Utils::Promise::Resolve(p.getExecutor(), p.result());
+                    }
+                    else { // Rejected
+
+                        auto errorMessage = std::make_shared<std::string>("ERR Internal server error.\r\n");
+
+                        if (!p.result().empty() && p.result()[0].type() == typeid(boost::system::error_code)) {
+
+                            auto ec = std::any_cast<boost::system::error_code>(p.result()[0]);
+
+                            if (ec == make_error_code(boost::system::errc::timed_out)) {
+                                *errorMessage = "ERR Command timeout.\r\n";
+                            }
+                        }
+
+                        return Asio::AsyncWriteSome(*sock, asio::buffer(*errorMessage))
+                            .then([sock, p, errorMessage]() {
+                                sock->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+                                return Utils::Promise::Reject(p.getExecutor(), p.result());
+                            });
+                    }
+                });
         }).then([sock](std::string command) {
 
             std::cout << ": \"" << command << "\"\n";
