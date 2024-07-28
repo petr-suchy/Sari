@@ -74,6 +74,24 @@ namespace Sari { namespace Utils {
             return impl_->state();
         }
 
+        // Returns true if the Promise is pending.
+        bool isPending() const
+        {
+            return state() == State::Pending;
+        }
+
+        // Returns true if the Promise has been fulfilled.
+        bool isFulfilled() const
+        {
+            return state() == State::Fulfilled;
+        }
+
+        // Returns true if the Promise has been rejected.
+        bool isRejected() const
+        {
+            return state() == State::Rejected;
+        }
+
         // Returns a constant reference to the vector of results.
         const std::vector<std::any>& result() const
         {
