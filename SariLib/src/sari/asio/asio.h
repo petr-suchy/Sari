@@ -41,6 +41,23 @@ namespace Sari { namespace Asio {
 		);
 	}
 
+	template<typename AsyncStream, typename ConstContainer>
+	Utils::Promise AsyncWrite(AsyncStream& astream, const ConstContainer& container)
+	{
+		auto data = std::make_shared<ConstContainer>(container);
+
+		return AsyncWriteSome(astream, boost::asio::buffer(*data))
+			.then([data]() {
+				return data;
+			});
+	}
+
+	template<typename AsyncStream>
+	Utils::Promise AsyncWrite(AsyncStream& astream, const char* s)
+	{
+		return AsyncWrite(astream, std::string{s});
+	}
+
 	template<typename Object, typename ConstBufferSequence>
 	Utils::Promise AsyncReadSome(Object& object, const ConstBufferSequence& buffers) {
 		return Utils::Promise(
