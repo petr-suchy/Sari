@@ -62,7 +62,7 @@ public:
                         });
                 }
                 else if (command == "BIND") {
-                    sinkToOther = exchanger.asyncPrtoduce(*trans, sinkPipe)
+                    sinkToOther = exchanger.asyncProduce(*trans, sinkPipe)
                         .then([sinkPipe, command](std::shared_ptr<PipeCoupler> other) {
                             std::cout << command << " request forwarded.\n";
                             return Stream::Forward(*sinkPipe, *other)

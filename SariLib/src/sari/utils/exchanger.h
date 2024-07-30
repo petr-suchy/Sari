@@ -84,7 +84,7 @@ namespace Sari { namespace Utils {
         }
 
         template<typename... Args>
-        Sari::Utils::Promise asyncPrtoduce(Transaction& trans, Args&&... args)
+        Sari::Utils::Promise asyncProduce(Transaction& trans, Args&&... args)
         {
             std::vector<std::any> vargs = { args... };
             return exchange(trans, vargs, produceHandlers_, consumeHandlers_);

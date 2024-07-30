@@ -12,7 +12,7 @@ int main()
 
     int goods = 100;
 
-    Sari::Utils::Promise selling = exchanger.asyncPrtoduce(trans1, goods)
+    Sari::Utils::Promise selling = exchanger.asyncProduce(trans1, goods)
         .then([goods](int price) {
             std::cout << "Alice sold " << goods << " for " << price << "$.\n";
         }).fail([](boost::system::error_code ec) {
