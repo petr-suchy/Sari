@@ -8,11 +8,9 @@ namespace Sari { namespace Utils {
     class Exchanger {
     public:
 
-        struct ExchangeHandler {
+        class ExchangeHandler {
 
-            Sari::Utils::VariadicFunction resolve_;
-            Sari::Utils::VariadicFunction reject_;
-            std::vector<std::any> vargs_;
+        public:
 
             ExchangeHandler(Sari::Utils::VariadicFunction resolve, Sari::Utils::VariadicFunction reject, const std::vector<std::any>& vargs) :
                 resolve_(resolve),
@@ -22,8 +20,38 @@ namespace Sari { namespace Utils {
 
             ~ExchangeHandler()
             {
-                reject_(make_error_code(boost::system::errc::operation_canceled));
+                if (isPending()) {
+                    reject_(make_error_code(boost::system::errc::operation_canceled));
+                }
             }
+
+            bool isPending() {
+                return isPending_;
+            }
+
+            void resolve(const std::vector<std::any>& vargs)
+            {
+                resolve_(vargs);
+                isPending_ = false;
+            }
+
+            void reject(const std::vector<std::any>& vargs)
+            {
+                reject(vargs);
+                isPending_ = false;
+            }
+
+            const std::vector<std::any>& vargs() const
+            {
+                return vargs_;
+            }
+
+        private:
+
+            bool isPending_ = true;
+            Sari::Utils::VariadicFunction resolve_;
+            Sari::Utils::VariadicFunction reject_;
+            std::vector<std::any> vargs_;
 
         };
 
@@ -37,14 +65,14 @@ namespace Sari { namespace Utils {
             bool isPending() const { return handlerElement_ != nullptr && handlerElement_->isStored(); }
             void cancel() { handlerElement_ = nullptr; }
 
+            Transaction(boost::asio::any_io_executor ioExecutor) :
+                ioExecutor_(ioExecutor)
+            {}
+
         private:
 
             boost::asio::any_io_executor ioExecutor_;
             std::unique_ptr<typename ExchangeHandlerList::Element> handlerElement_;
-
-            Transaction(boost::asio::any_io_executor ioExecutor) :
-                ioExecutor_(ioExecutor)
-            {}
 
         };
 
@@ -90,8 +118,8 @@ namespace Sari { namespace Utils {
                     if (counterpartHandlerElement) {
                         std::unique_ptr<ExchangeHandler> counterpartHandler = std::move(counterpartHandlerElement->data());
                         counterpartHandlers.remove(counterpartHandlerElement);
-                        counterpartHandler->resolve_(vargs);
-                        resolve(counterpartHandler->vargs_);
+                        counterpartHandler->resolve(vargs);
+                        resolve(counterpartHandler->vargs());
                     }
                     else {
                         auto exchangeHandler = std::make_unique<ExchangeHandler>(resolve, reject, vargs);
