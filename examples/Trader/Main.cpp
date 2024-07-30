@@ -8,7 +8,7 @@ int main()
     asio::io_context ioContext;
     Sari::Utils::Exchanger exchanger;
 
-    Sari::Utils::Exchanger::Transaction trans1 = Sari::Utils::Exchanger::CreateTransaction(ioContext);
+    Sari::Utils::Exchanger::Transaction trans1 = Sari::Utils::Exchanger::Transaction(ioContext.get_executor());
 
     int goods = 100;
 
@@ -28,7 +28,7 @@ int main()
 
     int price = 10;
 
-    Sari::Utils::Exchanger::Transaction trans2 = Sari::Utils::Exchanger::CreateTransaction(ioContext);
+    Sari::Utils::Exchanger::Transaction trans2 = Sari::Utils::Exchanger::Transaction(ioContext.get_executor());
 
     Sari::Utils::Promise buying = exchanger.asyncConsume(trans2, price)
         .then([price](int goods) {

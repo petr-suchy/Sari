@@ -90,16 +90,6 @@ namespace Sari { namespace Utils {
             return exchange(trans, vargs, produceHandlers_, consumeHandlers_);
         }
 
-        static Transaction CreateTransaction(boost::asio::any_io_executor ioExecutor)
-        {
-            return Transaction{ ioExecutor };
-        }
-
-        static Transaction CreateTransaction(boost::asio::io_context& ioContext)
-        {
-            return CreateTransaction(ioContext.get_executor());
-        }
-
     private:
 
         ExchangeHandlerList consumeHandlers_;
