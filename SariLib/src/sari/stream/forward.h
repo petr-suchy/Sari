@@ -131,7 +131,7 @@ namespace Sari { namespace Stream {
 	};
 
 	template<typename FirstStream, typename SecondStream>
-	static void Forwar(FirstStream& firstStream, SecondStream& secondStream, ForwardFinalizer::Handler handler)
+	static void Forward(FirstStream& firstStream, SecondStream& secondStream, ForwardFinalizer::Handler handler)
 	{
 		auto finalizer = std::make_shared<ForwardFinalizer>(handler);
 		auto first = std::make_shared<StreamForwarder<FirstStream>>(firstStream, finalizer);
