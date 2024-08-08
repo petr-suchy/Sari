@@ -2,6 +2,7 @@
 
 #include <typeinfo>
 #include <typeindex>
+#include <type_traits>
 #include <memory>
 #include <list>
 #include <map>
@@ -144,7 +145,12 @@ namespace Sari { namespace Utils {
         template<typename Handler>
         Promise& fail(Handler failHandler) 
         {
-            using FuncSign = FunctionSignature<decltype(std::function{failHandler})> ;
+            using FuncSign = FunctionSignature<decltype(std::function{failHandler})>;
+
+            static_assert(
+                std::is_same_v<typename FuncSign::Result, void>,
+                "Promise::fail() only accepts functions with no return type"
+            );
 
             switch (state()) {
                 case State::Fulfilled:
@@ -640,22 +646,14 @@ namespace Sari { namespace Utils {
                 if (failHandler) {
                     try {
 
-                        std::any result;
-
                         if (isCatchAllHandler) {
-                            result = failHandler(std::vector<std::any>{});
+                            failHandler(std::vector<std::any>{});
                         }
                         else {
-                            result = failHandler(vargs);
-                        }
-                        
-                        if (result.has_value()) {
-                            state(State::Fulfilled, std::vector<std::any>{ result });
-                        }
-                        else {
-                            state(State::Fulfilled);
+                            failHandler(vargs);
                         }
 
+                        state(State::Rejected);
                     }
                     catch (const std::exception& e) {
                         state(State::Rejected, std::vector<std::any>{ e });
