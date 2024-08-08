@@ -436,7 +436,6 @@ namespace Sari { namespace Utils {
         struct Impl : public std::enable_shared_from_this<Impl> {
 
             boost::asio::any_io_executor ioExecutor_;
-            std::shared_ptr<Impl> parent_;
             State state_ = State::Pending;
             std::vector<std::any> result_;
             std::list<AnyFunction> resolveHandlers_;
@@ -588,15 +587,14 @@ namespace Sari { namespace Utils {
                         throw std::runtime_error("a pending promise is expected");
                     }
 
-                    promise.impl_->parent_ = shared_from_this();
-
-                    promise.impl_->finalizeHandlers_.push_back(
-                        [parent = promise.impl_->parent_](Promise promise) {
-                            if (promise.state() == State::Fulfilled) {
-                                parent->resolve(promise.result());
-                            }
+                    promise.finalize([parent = shared_from_this()](Promise promise) {
+                        if (promise.state() == State::Fulfilled) {
+                            parent->resolve(promise.result());
                         }
-                    );
+                        else { // Rejected
+                            parent->reject(promise.result());
+                        }
+                    });
                 }
 
             }
@@ -658,40 +656,17 @@ namespace Sari { namespace Utils {
                             state(State::Fulfilled);
                         }
 
-                        if (parent_) {
-                            if (result.has_value()) {
-                                parent_->resolve(std::vector<std::any>{result});
-                            }
-                            else {
-                                parent_->resolve();
-                            }
-                        }
                     }
                     catch (const std::exception& e) {
-
                         state(State::Rejected, std::vector<std::any>{ e });
-
-                        if (parent_) {
-                            parent_->reject(std::vector<std::any>{e});
-                        }
                     }
                     catch (...) {
-
                         state(State::Rejected);
-
-                        if (parent_) {
-                            parent_->reject();
-                        }
                     }
 
                 }
                 else {
-
                     state(State::Rejected, vargs);
-
-                    if (parent_) {
-                        parent_->reject(vargs);
-                    }
                 }
             }
 
