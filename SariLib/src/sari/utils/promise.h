@@ -552,6 +552,7 @@ namespace Sari { namespace Utils {
                 std::any result;
 
                 try {
+                    // Call the resolve handler.
                     result = resolveHandler(vargs);
                 }
                 catch (const std::exception& e) {
@@ -563,45 +564,50 @@ namespace Sari { namespace Utils {
                     return;
                 }
 
-                Promise promise;
-            
-                if (result.has_value()) {
-                    if (result.type() == typeid(Promise)) {
-                        promise = std::any_cast<Promise>(result);
+                if (result.type() != typeid(Promise) && resolveHandlers_.empty()) {
+
+                    // When the result of the resolve handler call is not another promise
+                    // and there is no other resolve handler in the queue, the promise is fulfilled
+                    // with the result.
+
+                    if (result.has_value()) {
+                        state(State::Fulfilled, std::vector<std::any>{ result });
                     }
                     else {
-                        if (resolveHandlers_.empty()) {
-                            state(State::Fulfilled, std::vector<std::any>{ result });
-                        }
-                        else {
-                            promise = Promise::Resolve(ioExecutor_, result);
-                        }
-                    }
-                }
-                else {
-                    if (resolveHandlers_.empty()) {
                         state(State::Fulfilled);
                     }
+
+                    return;
+                }
+
+                // Otherwise, the result will be casted or converted to a promise.
+
+                Promise resultingPromise;
+
+                if (result.type() == typeid(Promise)) {
+                    resultingPromise = std::any_cast<Promise>(result);
+                }
+                else {
+                    if (result.has_value()) {
+                        resultingPromise = Promise::Resolve(ioExecutor_, result);
+                    }
                     else {
-                        promise = Promise::Resolve(ioExecutor_);
+                        resultingPromise = Promise::Resolve(ioExecutor_);
                     }
                 }
 
-                if (!promise.isNull()) {
+                resultingPromise.finalize([parent = shared_from_this()](Promise resultingPromise) {
 
-                    if (promise.state() != State::Pending) {
-                        throw std::runtime_error("a pending promise is expected");
+                    // After the promise resulting from the resolve handler call is settled,
+                    // the "parent" promise is settled accordingly.
+
+                    if (resultingPromise.state() == State::Fulfilled) {
+                        parent->resolve(resultingPromise.result());
                     }
-
-                    promise.finalize([parent = shared_from_this()](Promise promise) {
-                        if (promise.state() == State::Fulfilled) {
-                            parent->resolve(promise.result());
-                        }
-                        else { // Rejected
-                            parent->reject(promise.result());
-                        }
-                    });
-                }
+                    else { // Rejected
+                        parent->reject(resultingPromise.result());
+                    }
+                });
 
             }
 
