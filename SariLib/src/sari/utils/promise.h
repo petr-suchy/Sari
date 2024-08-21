@@ -621,57 +621,67 @@ namespace Sari { namespace Utils {
 
                 AnyFunction failHandler;
                 bool isCatchAllHandler = false;
-                
-                if (vargs.size() > 0) {
 
-                    auto it = failHandlers_.find(std::type_index(vargs[0].type()));
-                    
-                    if (it != failHandlers_.end()) {
-                        failHandler = it->second;
+                if (!vargs.empty()) {
+                    failHandler = findFailHandler(vargs[0].type());
+                }
+                
+                if (!failHandler) {
+
+                    failHandler = findGenericFailHandler();
+
+                    if (!failHandler) {
+                        state(State::Rejected, vargs);
+                        return;
+                    }
+
+                    isCatchAllHandler = true;
+                }
+
+                try {
+
+                    if (isCatchAllHandler) {
+                        failHandler(std::vector<std::any>{});
                     }
                     else {
-
-                        auto it2 = failHandlers_.find(std::type_index(typeid(void)));
-                        
-                        if (it2 != failHandlers_.end()) {
-                            failHandler = it2->second;
-                            isCatchAllHandler = true;
-                        }
+                        failHandler(vargs);
                     }
+
+                    state(State::Rejected);
                 }
-                else {
+                catch (const std::exception& e) {
+                    state(State::Rejected, std::vector<std::any>{ e });
+                }
+                catch (...) {
+                    state(State::Rejected);
+                }
+            }
 
-                    auto it = failHandlers_.find(std::type_index(typeid(void)));
+            template<typename T>
+            AnyFunction findFailHandler(const T& type)
+            {
+                AnyFunction result;
 
-                    if (it != failHandlers_.end()) {
-                        failHandler = it->second;
-                        isCatchAllHandler = true;
-                    }
+                auto it = failHandlers_.find(std::type_index(type));
+
+                if (it != failHandlers_.end()) {
+                    result = it->second;
                 }
 
-                if (failHandler) {
-                    try {
+                return result;
+            }
 
-                        if (isCatchAllHandler) {
-                            failHandler(std::vector<std::any>{});
-                        }
-                        else {
-                            failHandler(vargs);
-                        }
+            AnyFunction findGenericFailHandler()
+            {
+                AnyFunction result;
 
-                        state(State::Rejected);
-                    }
-                    catch (const std::exception& e) {
-                        state(State::Rejected, std::vector<std::any>{ e });
-                    }
-                    catch (...) {
-                        state(State::Rejected);
-                    }
+                auto it = failHandlers_.find(std::type_index(typeid(void)));
 
+                if (it != failHandlers_.end()) {
+                    result = it->second;
                 }
-                else {
-                    state(State::Rejected, vargs);
-                }
+
+                return result;
             }
 
         };
