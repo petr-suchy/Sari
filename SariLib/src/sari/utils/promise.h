@@ -585,7 +585,16 @@ namespace Sari { namespace Utils {
                 Promise resultingPromise;
 
                 if (result.type() == typeid(Promise)) {
+
                     resultingPromise = std::any_cast<Promise>(result);
+
+                    if (resultingPromise.isFulfilled()) {
+                        resultingPromise = Promise::Resolve(ioExecutor_, resultingPromise.result());
+                    }
+                    else if (resultingPromise.isRejected()) {
+                        resultingPromise = Promise::Reject(ioExecutor_, resultingPromise.result());
+                    }
+
                 }
                 else {
                     if (result.has_value()) {
