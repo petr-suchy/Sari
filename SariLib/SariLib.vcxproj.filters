@@ -131,5 +131,8 @@
     <ClInclude Include="src\sari\stream\coupler.h">
       <Filter>src\sari\stream</Filter>
     </ClInclude>
+    <ClInclude Include="src\sari\stream\transfer.h">
+      <Filter>src\sari\stream</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
