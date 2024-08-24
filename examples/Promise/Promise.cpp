@@ -216,7 +216,7 @@ int main()
         Utils::Promise p1 = Utils::Promise::Resolve(ioContext, 10, std::string{ "Hello!" });
         Utils::Promise p2 = Utils::Promise::Reject(ioContext, 123);
 
-        Utils::Promise::AllSettled(ioContext, { p1, p2 })
+        Utils::Promise p3 = Utils::Promise::AllSettled(ioContext, { p1, p2 })
             .then([](Utils::Promise p1, Utils::Promise p2) {
 
                 std::cout << "Promise 1: state=" << static_cast<int>(p1.state()) << " ";
@@ -238,11 +238,16 @@ int main()
                     std::cout << ec << '\n';
                 }
 
+                return true;
             }).fail([](std::exception e) {
                 std::cerr << "error: " << e.what() << '\n';
             }).fail([]() {
                 std::cerr << "Failed!\n";
             });
+
+        p3.then([](bool success) {
+            std::cout << "success: " << success << '\n';
+        });
     }
 
     ioContext.run();
