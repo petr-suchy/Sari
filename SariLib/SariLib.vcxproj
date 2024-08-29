@@ -171,7 +171,6 @@
     <ClInclude Include="src\sari\socks5\raw.h" />
     <ClInclude Include="src\sari\socks5\socks5.h" />
     <ClInclude Include="src\sari\stream\coupler.h" />
-    <ClInclude Include="src\sari\stream\forward.h" />
     <ClInclude Include="src\sari\stream\transfer.h" />
     <ClInclude Include="src\sari\string\range.h" />
     <ClInclude Include="src\sari\string\split_base.h" />

@@ -4,7 +4,7 @@
 #include "sari/string/trim.h"
 #include "sari/utils/exchanger.h"
 #include "Sari/stream/coupler.h"
-#include "sari/stream/forward.h"
+#include "sari/stream/transfer.h"
 
 class Proxy {
 public:
@@ -56,7 +56,7 @@ public:
                             return Asio::AsyncWrite(*other, "ACK\r\n")
                                 .then([sinkPipe, other, command]() {
                                     std::cout << command << " request forwarded.\n";
-                                    return Stream::Forward(*sinkPipe, *other)
+                                    return Stream::Transfer::Forward(*sinkPipe, *other)
                                         .then([sinkPipe, other]() {});
                                 });
                         });
@@ -65,7 +65,7 @@ public:
                     sinkToOther = exchanger.asyncProduce(*trans, sinkPipe)
                         .then([sinkPipe, command](std::shared_ptr<PipeCoupler> other) {
                             std::cout << command << " request forwarded.\n";
-                            return Stream::Forward(*sinkPipe, *other)
+                            return Stream::Transfer::Forward(*sinkPipe, *other)
                                 .then([sinkPipe, other]() {});
                         });
                 }
@@ -81,7 +81,7 @@ public:
                     std::cout << command << " request is pending...\n";
                 }
 
-                auto sockToSource = Stream::Forward(*sock, *sourcePipe)
+                auto sockToSource = Stream::Transfer::Forward(*sock, *sourcePipe)
                     .then([sock, sourcePipe, trans, command]() {
 
                         bool isPending = trans->isPending();
@@ -93,7 +93,10 @@ public:
                         }
                     });
 
-                return Utils::Promise::All(sock->get_executor(), { sockToSource, sinkToOther });
+                return Utils::Promise::All(sock->get_executor(), { sockToSource, sinkToOther })
+                    .finalize([](Utils::Promise p) {
+                        std::cout << "Connection end.\n";
+                    });
             }).finalize([sock](Utils::Promise p) {
                 sock->close();
             });

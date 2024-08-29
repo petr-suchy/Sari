@@ -6,6 +6,8 @@
 #include <functional>
 #include <boost/asio/buffer.hpp>
 
+#include "../utils/promise.h"
+
 namespace Sari { namespace Stream { namespace Transfer {
 
 	constexpr std::size_t EndpointBufferSize = 4096;
@@ -30,27 +32,24 @@ namespace Sari { namespace Stream { namespace Transfer {
 
 	};
 
-	// Holds a stream.
-	template<bool isSink, typename StreamType>
-	struct Endpoint;
-
 	// Holds a readable stream.
 	template<typename ReadbaleStream>
-	using Source = Endpoint<false, ReadbaleStream>;
+	struct Source;
+
 	// Holds a writable stream.
 	template<typename WritableStream>
-	using Sink = Endpoint<true, WritableStream>;
+	struct Sink;
 
 	// Holds a readable stream.
 	template<typename ReadableStream>
-	struct Endpoint<false, ReadableStream> : std::enable_shared_from_this<Endpoint<false, ReadableStream>> {
+	struct Source : std::enable_shared_from_this<Source<ReadableStream>> {
 
 		char readBuff_[EndpointBufferSize] = { 0 };
 		std::size_t bytesRead_ = 0;
 		ReadableStream& readableStream_;
 		std::shared_ptr<Finalizer> finalizer_;
 
-		Endpoint(ReadableStream& readableStream, std::shared_ptr<Finalizer> finalizer) :
+		Source(ReadableStream& readableStream, std::shared_ptr<Finalizer> finalizer) :
 			readableStream_(readableStream),
 			finalizer_(finalizer)
 		{}
@@ -96,7 +95,7 @@ namespace Sari { namespace Stream { namespace Transfer {
 
 	// Holds a writable stream.
 	template<typename WritableStream>
-	struct Endpoint<true, WritableStream> : std::enable_shared_from_this<Endpoint<true, WritableStream>> {
+	struct Sink : std::enable_shared_from_this<Sink<WritableStream>> {
 
 		char writeBuff_[EndpointBufferSize] = { 0 };
 		std::size_t bytesToWrite_ = 0;
@@ -104,7 +103,7 @@ namespace Sari { namespace Stream { namespace Transfer {
 		WritableStream& writableStream_;
 		std::shared_ptr<Finalizer> finalizer_;
 
-		Endpoint(WritableStream& writableStream, std::shared_ptr<Finalizer> finalizer) :
+		Sink(WritableStream& writableStream, std::shared_ptr<Finalizer> finalizer) :
 			writableStream_(writableStream),
 			finalizer_(finalizer)
 		{}
@@ -148,17 +147,80 @@ namespace Sari { namespace Stream { namespace Transfer {
 
 	};
 
-	// Connect a readable stream to a writable stream so that all data read from the readable stream
+	// Redirect a readable stream to a writable stream so that all data read from the readable stream
 	// will be written to the writable stream.
 	template<typename ReadableStream, typename WritableStream>
-	static void Connect(ReadableStream& readableStream, WritableStream& writableStream, Finalizer::Handler handler)
+	static void Redirect(ReadableStream& readableStream, WritableStream& writableStream, std::shared_ptr<Finalizer> finalizer)
 	{
-		auto finalizer = std::make_shared<Finalizer>(handler);
 		auto source = std::make_shared<Source<ReadableStream>>(readableStream, finalizer);
 		auto sink = std::make_shared<Sink<WritableStream>>(writableStream, finalizer);
 
 		source->transfer(sink);
 	}
 
-}}}
+	// Redirect a readable stream to a writable stream so that all data read from the readable stream
+	// will be written to the writable stream.
+	template<typename ReadableStream, typename WritableStream>
+	static void Redirect(ReadableStream& readableStream, WritableStream& writableStream, Finalizer::Handler handler)
+	{
+		auto finalizer = std::make_shared<Finalizer>(handler);
+		Redirect(readableStream, writableStream, finalizer);
+	}
 
+	// Redirect a readable stream to a writable stream so that all data read from the readable stream
+	// will be written to the writable stream.
+	template<typename ReadableStream, typename WritableStream>
+	static Utils::Promise Redirect(ReadableStream& readableStream, WritableStream& writableStream)
+	{
+		return Utils::Promise(
+			readableStream.get_executor(),
+			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+
+				Finalizer::Handler handler = [=]() {
+					resolve();
+				};
+
+				Redirect(readableStream, writableStream);
+			},
+			Utils::Promise::Async
+		);
+	}
+
+	// Forward the first stream to the second stream so that any data read from the first stream
+	// is written to the second stream and vice versa.
+	template<typename FirstStream, typename SecondStream>
+	static void Forward(FirstStream& firstStream, SecondStream& secondStream, std::shared_ptr<Finalizer> finalizer)
+	{
+		Redirect(firstStream, secondStream, finalizer);
+		Redirect(secondStream, firstStream, finalizer);
+	}
+
+	// Forward the first stream to the second stream so that any data read from the first stream
+	// is written to the second stream and vice versa.
+	template<typename FirstStream, typename SecondStream>
+	static void Forward(FirstStream& firstStream, SecondStream& secondStream, Finalizer::Handler handler)
+	{
+		auto finalizer = std::make_shared<Finalizer>(handler);
+		Forward(firstStream, secondStream, finalizer);
+	}
+
+	// Forward the first stream to the second stream so that any data read from the first stream
+	// is written to the second stream and vice versa.
+	template<typename FirstStream, typename SecondStream>
+	static Utils::Promise Forward(FirstStream& firstStream, SecondStream& secondStream)
+	{
+		return Utils::Promise(
+			firstStream.get_executor(),
+			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+
+				Finalizer::Handler handler = [=]() {
+					resolve();
+				};
+
+				Forward(firstStream, secondStream, handler);
+			},
+			Utils::Promise::Async
+		);
+	}
+
+}}}

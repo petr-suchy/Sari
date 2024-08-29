@@ -95,9 +95,6 @@
     <ClInclude Include="src\sari\asio\asio.h">
       <Filter>src\sari\asio</Filter>
     </ClInclude>
-    <ClInclude Include="src\sari\stream\forward.h">
-      <Filter>src\sari\stream</Filter>
-    </ClInclude>
     <ClInclude Include="src\sari\string\split.h">
       <Filter>src\sari\string</Filter>
     </ClInclude>
