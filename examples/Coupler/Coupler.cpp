@@ -1,6 +1,6 @@
 #include <iostream>
 #include "sari/asio/asio.h"
-#include "sari/stream/coupler.h"
+#include "sari/stream/twowaystream.h"
 
 namespace asio = boost::asio;
 namespace Asio = Sari::Asio;
@@ -71,7 +71,7 @@ static Utils::Promise AsyncClient(std::shared_ptr<Stream> stream)
 
 int main()
 {
-    using PipeCoupler = Stream::Coupler<boost::asio::readable_pipe, boost::asio::writable_pipe>;
+    using PipeCoupler = Stream::TwoWayStream<boost::asio::readable_pipe, boost::asio::writable_pipe>;
 
     asio::io_context ioContext;
 

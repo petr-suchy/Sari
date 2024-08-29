@@ -3,7 +3,7 @@
 #include "sari/asio/asio.h"
 #include "sari/string/trim.h"
 #include "sari/utils/exchanger.h"
-#include "Sari/stream/coupler.h"
+#include "Sari/stream/twowaystream.h"
 #include "sari/stream/transfer.h"
 
 class Proxy {
@@ -38,10 +38,10 @@ public:
                     });
             }).then([sock, &exchanger](std::string command) {
 
-                using PipeCoupler = Stream::Coupler<boost::asio::readable_pipe, boost::asio::writable_pipe>;
+                using TwoWayPipe = Stream::TwoWayStream<boost::asio::readable_pipe, boost::asio::writable_pipe>;
 
-                auto sourcePipe = std::make_shared<PipeCoupler>(sock->get_executor());
-                auto sinkPipe = std::make_shared<PipeCoupler>(sock->get_executor());
+                auto sourcePipe = std::make_shared<TwoWayPipe>(sock->get_executor());
+                auto sinkPipe = std::make_shared<TwoWayPipe>(sock->get_executor());
 
                 boost::asio::connect_pipe(sourcePipe->writable_end(), sinkPipe->readable_end());
                 boost::asio::connect_pipe(sinkPipe->writable_end(), sourcePipe->readable_end());
@@ -52,7 +52,7 @@ public:
 
                 if (command == "CONNECT") {
                     sinkToOther = exchanger.asyncConsume(*trans, sinkPipe)
-                        .then([sinkPipe, command](std::shared_ptr<PipeCoupler> other) {
+                        .then([sinkPipe, command](std::shared_ptr<TwoWayPipe> other) {
                             return Asio::AsyncWrite(*other, "ACK\r\n")
                                 .then([sinkPipe, other, command]() {
                                     std::cout << command << " request forwarded.\n";
@@ -63,7 +63,7 @@ public:
                 }
                 else if (command == "BIND") {
                     sinkToOther = exchanger.asyncProduce(*trans, sinkPipe)
-                        .then([sinkPipe, command](std::shared_ptr<PipeCoupler> other) {
+                        .then([sinkPipe, command](std::shared_ptr<TwoWayPipe> other) {
                             std::cout << command << " request forwarded.\n";
                             return Stream::Transfer::Forward(*sinkPipe, *other)
                                 .then([sinkPipe, other]() {});

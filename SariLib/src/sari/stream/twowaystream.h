@@ -3,17 +3,17 @@
 namespace Sari { namespace Stream {
 
 	template<typename ReadableEnd, typename WritableEnd = ReadableEnd>
-	class Coupler {
+	class TwoWayStream {
 	public:
 
 		using executor_type = typename ReadableEnd::executor_type;
 
-		Coupler(boost::asio::io_context& ioContext) :
+		TwoWayStream(boost::asio::io_context& ioContext) :
 			readableEnd_(ioContext),
 			writableEnd_(ioContext)
 		{}
 
-		Coupler(boost::asio::any_io_executor ioExecutor) :
+		TwoWayStream(boost::asio::any_io_executor ioExecutor) :
 			readableEnd_(ioExecutor),
 			writableEnd_(ioExecutor)
 		{}
