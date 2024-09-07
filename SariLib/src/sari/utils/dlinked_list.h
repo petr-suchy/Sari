@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 namespace Sari { namespace Utils {
 
     template<typename Data>
@@ -19,7 +21,7 @@ namespace Sari { namespace Utils {
 
             ~Element()
             {
-                if (list_) {
+                if (isStored()) {
                     list_->remove(this);
                 }
             }
@@ -38,9 +40,15 @@ namespace Sari { namespace Utils {
 
         };
 
-        DLinkedList() :
-            first_(nullptr),
-            last_(nullptr)
+        using ForcedRemovalHandler = std::function<void(Element*)>;
+
+        DLinkedList()
+        {}
+
+        // ForcedRemovalHandler is called during list destruction
+        // for each element that has not been removed.
+        DLinkedList(ForcedRemovalHandler forcedRemovalHandler) :
+            forcedRemovalHandler_(forcedRemovalHandler)
         {}
 
         ~DLinkedList()
@@ -48,8 +56,15 @@ namespace Sari { namespace Utils {
             Element* curr = first();
 
             while (curr) {
+
                 Element* next = curr->next_;
+
                 remove(curr);
+
+                if (forcedRemovalHandler_) {
+                    forcedRemovalHandler_(curr);
+                }
+
                 curr = next;
             }
         }
@@ -98,8 +113,10 @@ namespace Sari { namespace Utils {
 
     private:
 
-        Element* first_;
-        Element* last_;
+        Element* first_ = nullptr;
+        Element* last_ = nullptr;
+
+        ForcedRemovalHandler forcedRemovalHandler_;
 
     };
 
