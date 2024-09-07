@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Coupler", "examples\Coupler
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Telnet", "examples\Telnet\Telnet.vcxproj", "{68B31BED-FCE2-48C8-8D66-71435AFC0098}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WeakList", "examples\WeakList\WeakList.vcxproj", "{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -103,6 +105,14 @@ Global
 		{68B31BED-FCE2-48C8-8D66-71435AFC0098}.Release|x64.Build.0 = Release|x64
 		{68B31BED-FCE2-48C8-8D66-71435AFC0098}.Release|x86.ActiveCfg = Release|Win32
 		{68B31BED-FCE2-48C8-8D66-71435AFC0098}.Release|x86.Build.0 = Release|Win32
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Debug|x64.ActiveCfg = Debug|x64
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Debug|x64.Build.0 = Debug|x64
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Debug|x86.ActiveCfg = Debug|Win32
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Debug|x86.Build.0 = Debug|Win32
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Release|x64.ActiveCfg = Release|x64
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Release|x64.Build.0 = Release|x64
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Release|x86.ActiveCfg = Release|Win32
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,6 +126,7 @@ Global
 		{18F3D4EC-4441-4803-8368-E13273B21FFD} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{9220C216-9328-4BF2-B1C3-2F0664F3C037} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 		{68B31BED-FCE2-48C8-8D66-71435AFC0098} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
+		{5B4F3E67-08C2-4B53-8BBB-13FA9796A30B} = {EB330523-7A3D-4CFE-A91C-FA708E9F0F1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0EC27A05-5F1E-411C-B7E6-AFAB68C905CF}
