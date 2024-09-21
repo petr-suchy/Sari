@@ -37,7 +37,7 @@ namespace Sari { namespace Utils {
 
             void reject(const std::vector<std::any>& vargs)
             {
-                reject(vargs);
+                reject_(vargs);
                 isPending_ = false;
             }
 
@@ -69,6 +69,10 @@ namespace Sari { namespace Utils {
                 ioExecutor_(ioExecutor)
             {}
 
+            Transaction(boost::asio::io_context& ioContext) :
+                ioExecutor_(ioContext.get_executor())
+            {}
+
         private:
 
             boost::asio::any_io_executor ioExecutor_;
@@ -89,6 +93,21 @@ namespace Sari { namespace Utils {
             std::vector<std::any> vargs = { args... };
             return exchange(trans, vargs, produceHandlers_, consumeHandlers_);
         }
+
+        Exchanger() :
+            consumeHandlers_([](ExchangeHandlerList::Element* e) {
+                e->data()->reject(
+                    // Cancel any pending request when Exchanger is destroyed.
+                    std::vector<std::any>{make_error_code(boost::system::errc::operation_canceled)}
+                );
+            }),
+            produceHandlers_([](ExchangeHandlerList::Element* e) {
+                e->data()->reject(
+                    // Cancel any pending request when Exchanger is destroyed.
+                    std::vector<std::any>{make_error_code(boost::system::errc::operation_canceled)}
+                );
+            })
+        {}
 
     private:
 
