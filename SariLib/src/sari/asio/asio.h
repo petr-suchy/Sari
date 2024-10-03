@@ -9,7 +9,7 @@ namespace Sari { namespace Asio {
 	{
 		return Utils::Promise(
 			object.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				object.async_wait([=](const boost::system::error_code& ec) {
 					if (ec) {
 						reject(ec);
@@ -27,7 +27,7 @@ namespace Sari { namespace Asio {
 	Utils::Promise AsyncWriteSome(Object& object, const ConstBufferSequence& buffers) {
 		return Utils::Promise(
 			object.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				object.async_write_some(buffers, [=](const boost::system::error_code& ec, std::size_t bytesTransferred) {
 					if (ec) {
 						reject(ec);
@@ -62,7 +62,7 @@ namespace Sari { namespace Asio {
 	Utils::Promise AsyncReadSome(Object& object, const ConstBufferSequence& buffers) {
 		return Utils::Promise(
 			object.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				object.async_read_some(buffers, [=](const boost::system::error_code& ec, std::size_t bytesTransferred) {
 					if (ec) {
 						reject(ec);
@@ -80,7 +80,7 @@ namespace Sari { namespace Asio {
 	Utils::Promise AsyncRead(Object& object, const ConstBufferSequence& buffers) {
 		return Utils::Promise(
 			object.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				boost::asio::async_read(object, buffers, [=](const boost::system::error_code& ec, std::size_t bytesTransferred) {
 					if (ec) {
 						reject(ec);
@@ -102,7 +102,7 @@ namespace Sari { namespace Asio {
 	){
 		return Utils::Promise(
 			stream.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				boost::asio::async_read_until(stream, streamBuf, delim, [=](const boost::system::error_code& ec, std::size_t bytesTransferred) {
 					if (ec) {
 						reject(ec);
@@ -121,7 +121,7 @@ namespace Sari { namespace Asio {
 	{
 		return Utils::Promise(
 			resolver.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				resolver.async_resolve(query, [=](const boost::system::error_code& ec, typename Resolver::iterator it) {
 					if (ec) {
 						reject(ec);
@@ -140,7 +140,7 @@ namespace Sari { namespace Asio {
 	{
 		return Utils::Promise(
 			socket.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				socket.async_connect(endpoint, [=](const boost::system::error_code& ec) {
 					if (ec) {
 						reject(ec);
@@ -159,7 +159,7 @@ namespace Sari { namespace Asio {
 	{
 		return Utils::Promise(
 			socket.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 				boost::asio::async_connect(socket, it, [=](const boost::system::error_code& ec, Iterator it) {
 					if (ec) {
 						reject(ec);

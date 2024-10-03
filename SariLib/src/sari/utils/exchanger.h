@@ -12,7 +12,7 @@ namespace Sari { namespace Utils {
 
         public:
 
-            ExchangeHandler(Sari::Utils::VariadicFunction resolve, Sari::Utils::VariadicFunction reject, const std::vector<std::any>& vargs) :
+            ExchangeHandler(Sari::Utils::AnyFunction resolve, Sari::Utils::AnyFunction reject, const std::vector<std::any>& vargs) :
                 resolve_(resolve),
                 reject_(reject),
                 vargs_(vargs)
@@ -49,8 +49,8 @@ namespace Sari { namespace Utils {
         private:
 
             bool isPending_ = true;
-            Sari::Utils::VariadicFunction resolve_;
-            Sari::Utils::VariadicFunction reject_;
+            Sari::Utils::AnyFunction resolve_;
+            Sari::Utils::AnyFunction reject_;
             std::vector<std::any> vargs_;
 
         };
@@ -120,7 +120,7 @@ namespace Sari { namespace Utils {
         ) {
 		    return Sari::Utils::Promise(
                 trans.getExecutor(),
-			    [&](Sari::Utils::VariadicFunction resolve, Sari::Utils::VariadicFunction reject) {
+			    [&](Sari::Utils::AnyFunction resolve, Sari::Utils::AnyFunction reject) {
 
                     typename ExchangeHandlerList::Element* counterpartHandlerElement = counterpartHandlers.first();
 

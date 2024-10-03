@@ -7,7 +7,35 @@
 
 namespace Sari { namespace Utils {
 
-	using AnyFunction = std::function<std::any(const std::vector<std::any>&)>;
+	class AnyFunction {
+	public:
+
+		using Caller = std::function<std::any(const std::vector<std::any>&)>;
+
+		AnyFunction()
+		{}
+
+		AnyFunction(Caller caller) :
+			caller_(std::make_shared<Caller>(std::move(caller)))
+		{}
+
+		template<typename... Args>
+		std::any operator() (Args&&... args) const
+		{
+			std::vector<std::any> vargs = { args... };
+			return (*caller_)(vargs);
+		}
+
+		explicit operator bool() const noexcept
+		{
+			return caller_ != nullptr;
+		}
+
+	private:
+
+		std::shared_ptr<Caller> caller_;
+
+	};
 
 	template <typename T>
 	class AnyFunctionWrapper;
@@ -21,36 +49,42 @@ namespace Sari { namespace Utils {
 		using FuncParams = std::tuple<A...>;
 		static constexpr std::size_t NumOfFuncParams = std::tuple_size<FuncParams>::value;
 
-		static AnyFunction create(FuncType f)
+		static AnyFunction create(const FuncType& f)
 		{
 			return create_<FuncResult>(f);
 		}
 
 	private:
 
+		template<typename T>
+		static auto ForwardArgument(const std::any& arg)
+		{
+			return std::forward<T>(std::any_cast<T>(arg));
+		}
+
 		// calls the original (wrapped) function with a return value
 		template <std::size_t... I>
-		static FuncResult call(FuncType f, const std::vector<std::any>& args, std::index_sequence<I...>)
+		static FuncResult call(const FuncType& f, const std::vector<std::any>& args, std::index_sequence<I...>)
 		{
-			return std::forward<FuncType>(f)(
-				std::any_cast<std::tuple_element<I, FuncParams>::type>(args[I])...
+			return f(
+				ForwardArgument<std::tuple_element<I, FuncParams>::type>(args[I])...
 			);
 		}
 
 		// calls the original (wrapped) function with no return value
 		template <std::size_t... I>
-		static void callVoid(FuncType f, const std::vector<std::any>& args, std::index_sequence<I...>)
+		static void callVoid(const FuncType& f, const std::vector<std::any>& args, std::index_sequence<I...>)
 		{
-			std::forward<FuncType>(f)(
-				std::any_cast<std::tuple_element<I, FuncParams>::type>(args[I])...
+			f(
+				ForwardArgument<std::tuple_element<I, FuncParams>::type>(args[I])...
 			);
 		}
 
 		// creates wrapper for a function with a return value 
 		template<typename R>
-		static AnyFunction create_(FuncType f)
+		static AnyFunction create_(const FuncType& f)
 		{
-			return [f](const std::vector<std::any>& args) {
+			auto caller = [f](const std::vector<std::any>& args) {
 
 				if (args.size() < NumOfFuncParams) {
 					throw std::bad_any_cast();
@@ -61,13 +95,15 @@ namespace Sari { namespace Utils {
 					call(f, args,  std::make_index_sequence<NumOfFuncParams>{})
 				};
 			};
+
+			return AnyFunction{std::move(caller)};
 		}
 
 		// explicit specialization for wrapping a function with no return value
 		template<>
-		static AnyFunction create_<void>(FuncType f)
+		static AnyFunction create_<void>(const FuncType& f)
 		{
-			return [f](const std::vector<std::any>& args) {
+			auto caller = [f](const std::vector<std::any>& args) {
 
 				if (args.size() < NumOfFuncParams) {
 					throw std::bad_any_cast();
@@ -78,44 +114,16 @@ namespace Sari { namespace Utils {
 				// return empty std::any value
 				return std::any{};
 			};
+
+			return AnyFunction{std::move(caller)};
 		}
 
 	};
-
-	class VariadicFunction {
-	public:
-
-		VariadicFunction()
-		{}
-
-		VariadicFunction(const AnyFunction& func) :
-			func_(func)
-		{}
-
-		template<typename... Args>
-		std::any operator() (Args&&... args) const
-		{
-			std::vector<std::any> vargs = { args... };
-			return func_(vargs);
-		}
-
-	private:
-
-		AnyFunction func_;
-
-	};
-
-	template<typename... Args>
-	static std::any CallAnyFunc(const AnyFunction& f, Args&&... args)
-	{
-		std::vector<std::any> vargs = { args... };
-		return f(vargs);
-	}
 
 	// Wraps the input function into Utils::AnyFunction object,
 	// enabling type erasure and polymorphic behavior.
 	template<typename F>
-	static AnyFunction MakeAnyFunc(F f)
+	static AnyFunction MakeAnyFunc(const F& f)
 	{
 		return AnyFunctionWrapper<decltype(std::function{f})>::template create(f);
 	}

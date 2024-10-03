@@ -20,7 +20,7 @@ namespace Sari { namespace Utils {
             Pending, Fulfilled, Rejected
         };
 
-        using Executor = std::function<void(VariadicFunction, VariadicFunction)>;
+        using Executor = std::function<void(AnyFunction, AnyFunction)>;
 
         struct AsyncAttr{};
         static constexpr AsyncAttr Async{};
@@ -192,7 +192,7 @@ namespace Sari { namespace Utils {
 
             return Promise(
                 ioExecutor,
-                [vargs](VariadicFunction resolve, VariadicFunction reject) {
+                [vargs](AnyFunction resolve, AnyFunction reject) {
                     resolve(vargs);
                 }
             );
@@ -213,7 +213,7 @@ namespace Sari { namespace Utils {
 
             return Promise(
                 ioExecutor,
-                [vargs](VariadicFunction resolve, VariadicFunction reject) {
+                [vargs](AnyFunction resolve, AnyFunction reject) {
                     reject(vargs);
                 }
             );
@@ -233,7 +233,7 @@ namespace Sari { namespace Utils {
 
             return Promise(
                 ioExecutor,
-                [ioExecutor, task, vargs](VariadicFunction resolve, VariadicFunction reject) {
+                [ioExecutor, task, vargs](AnyFunction resolve, AnyFunction reject) {
                     Repeat_(ioExecutor, MakeAnyFunc(task), vargs, resolve, reject);
                 },
                 Promise::Async
@@ -259,7 +259,7 @@ namespace Sari { namespace Utils {
 
             Promise resultingPromise = Promise(
                 ioExecutor,
-                [group](VariadicFunction resolve, VariadicFunction reject) {
+                [group](AnyFunction resolve, AnyFunction reject) {
                     group->resolve = resolve;
                     group->reject = reject;
                 },
@@ -313,7 +313,7 @@ namespace Sari { namespace Utils {
 
                 Promise resultingPromise = Promise(
                     ioExecutor,
-                    [group](VariadicFunction resolve, VariadicFunction reject) {
+                    [group](AnyFunction resolve, AnyFunction reject) {
                         group->resolve = resolve;
                         group->reject = reject;
                     },
@@ -363,7 +363,7 @@ namespace Sari { namespace Utils {
 
                 Promise resultingPromise = Promise(
                     ioExecutor,
-                    [group](VariadicFunction resolve, VariadicFunction reject) {
+                    [group](AnyFunction resolve, AnyFunction reject) {
                         group->resolve = resolve;
                         group->reject = reject;
                     },
@@ -406,7 +406,7 @@ namespace Sari { namespace Utils {
 
             Promise resultingPromise = Promise(
                 ioExecutor,
-                [group](VariadicFunction resolve, VariadicFunction reject) {
+                [group](AnyFunction resolve, AnyFunction reject) {
                     group->resolve = resolve;
                     group->reject = reject;
                 },
@@ -475,7 +475,7 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor)
             {
-                VariadicFunction resolve{
+                AnyFunction resolve{
                     [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->resolve(vargs);
@@ -484,7 +484,7 @@ namespace Sari { namespace Utils {
                     }
                 };
 
-                VariadicFunction reject{
+                AnyFunction reject{
                     [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
                         boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
                             impl->reject(vargs);
@@ -498,14 +498,14 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor, AsyncAttr)
             {
-                VariadicFunction resolve{
+                AnyFunction resolve{
                     [impl = shared_from_this()](const std::vector<std::any>& vargs) {
                         impl->resolve(vargs);
                         return std::any{};
                     }
                 };
 
-                VariadicFunction reject{
+                AnyFunction reject{
                     [impl = shared_from_this()](const std::vector<std::any>& vargs) {
                         impl->reject(vargs);
                         return std::any{};
@@ -515,7 +515,7 @@ namespace Sari { namespace Utils {
                 callExecutor(executor, resolve, reject);
             }
 
-            void callExecutor(const Executor& executor, const VariadicFunction& resolve, const VariadicFunction& reject)
+            void callExecutor(const Executor& executor, const AnyFunction& resolve, const AnyFunction& reject)
             {
                 try {
                     executor(resolve, reject);
@@ -701,8 +701,8 @@ namespace Sari { namespace Utils {
 
             std::size_t counter;
             std::vector<std::any> result;
-            VariadicFunction resolve;
-            VariadicFunction reject;
+            AnyFunction resolve;
+            AnyFunction reject;
 
             Group(std::size_t size, std::size_t resultSize = 0) :
                 counter(size),
@@ -718,7 +718,7 @@ namespace Sari { namespace Utils {
         static void Repeat_(
             boost::asio::any_io_executor ioExecutor,
             AnyFunction task, const std::vector<std::any>& vargs,
-            VariadicFunction resolve, VariadicFunction reject
+            AnyFunction resolve, AnyFunction reject
         )
         {
             std::any result = task(vargs);

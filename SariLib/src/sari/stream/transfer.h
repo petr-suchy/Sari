@@ -174,7 +174,7 @@ namespace Sari { namespace Stream { namespace Transfer {
 	{
 		return Utils::Promise(
 			readableStream.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 
 				Finalizer::Handler handler = [=]() {
 					resolve();
@@ -211,7 +211,7 @@ namespace Sari { namespace Stream { namespace Transfer {
 	{
 		return Utils::Promise(
 			firstStream.get_executor(),
-			[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+			[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 
 				Finalizer::Handler handler = [=]() {
 					resolve();

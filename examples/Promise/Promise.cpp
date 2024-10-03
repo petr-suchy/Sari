@@ -9,7 +9,7 @@ Utils::Promise AsyncWait(Object& object)
 {
 	return Utils::Promise(
 		object.get_executor(),
-		[&](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+		[&](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
 			object.async_wait([=](const boost::system::error_code& ec) {
 				if (ec) {
 					reject(ec);
@@ -33,7 +33,7 @@ int main()
 
         Utils::Promise promise = Utils::Promise(
             ioContext,
-            [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+            [](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
                 // Asynchronous operation
                 bool success = true;
 
@@ -50,7 +50,7 @@ int main()
             std::cout << value << '\n'; // "Operation was successful!"
             return Utils::Promise(
                 ioContext,
-                [](Utils::VariadicFunction resolve, Utils::VariadicFunction reject) {
+                [](Utils::AnyFunction resolve, Utils::AnyFunction reject) {
                     resolve(std::string{"Next step success!"});
                 }
             );
