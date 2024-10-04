@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <typeinfo>
 #include <typeindex>
 #include <type_traits>
@@ -475,19 +476,37 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor)
             {
+                auto hasBeenAlreadyCalled = std::make_shared<bool>(false);
+
                 AnyFunction resolve{
-                    [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
-                        boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
-                            impl->resolve(vargs);
+                    [hasBeenAlreadyCalled, impl = shared_from_this()] (const std::vector<std::any>& vargs) {
+
+                        boost::asio::post(impl->ioExecutor_, [hasBeenAlreadyCalled, impl, vargs]() {
+
+                            assert(!*hasBeenAlreadyCalled);
+
+                            if (!*hasBeenAlreadyCalled) {
+                                *hasBeenAlreadyCalled = true;
+                                impl->resolve(vargs);
+                            }
+
                         });
+
                         return std::any{};
                     }
                 };
 
                 AnyFunction reject{
-                    [impl = shared_from_this()] (const std::vector<std::any>& vargs) {
-                        boost::asio::post(impl->ioExecutor_, [impl, vargs]() {
-                            impl->reject(vargs);
+                    [hasBeenAlreadyCalled, impl = shared_from_this()] (const std::vector<std::any>& vargs) {
+                        boost::asio::post(impl->ioExecutor_, [hasBeenAlreadyCalled, impl, vargs]() {
+
+                            assert(!*hasBeenAlreadyCalled);
+
+                            if (!*hasBeenAlreadyCalled) {
+                                *hasBeenAlreadyCalled = true;
+                                impl->reject(vargs);
+                            }
+
                         });
                         return std::any{};
                     }
@@ -498,16 +517,32 @@ namespace Sari { namespace Utils {
 
             void launchExecutor(const Executor& executor, AsyncAttr)
             {
+                auto hasBeenAlreadyCalled = std::make_shared<bool>(false);
+
                 AnyFunction resolve{
-                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
-                        impl->resolve(vargs);
+                    [hasBeenAlreadyCalled, impl = shared_from_this()] (const std::vector<std::any>& vargs) {
+
+                        assert(!*hasBeenAlreadyCalled);
+
+                        if (!*hasBeenAlreadyCalled) {
+                            *hasBeenAlreadyCalled = true;
+                            impl->resolve(vargs);
+                        }
+
                         return std::any{};
                     }
                 };
 
                 AnyFunction reject{
-                    [impl = shared_from_this()](const std::vector<std::any>& vargs) {
-                        impl->reject(vargs);
+                    [hasBeenAlreadyCalled, impl = shared_from_this()](const std::vector<std::any>& vargs) {
+
+                        assert(!*hasBeenAlreadyCalled);
+
+                        if (!*hasBeenAlreadyCalled) {
+                            *hasBeenAlreadyCalled = true;
+                            impl->reject(vargs);
+                        }
+
                         return std::any{};
                     }
                 };
